@@ -69,7 +69,7 @@ TRIGGERS = {
     "Lightning":      {"price": 80,  "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "mobility": 1}},
 
     # ── Optional Triggers ─────────────────────────────────────
-    # Grasshopper: creates jump pads, extreme mobility boost (Yuma\'s signature)
+    # Grasshopper: creates jump pads, extreme mobility boost (Yuma's signature)
     "Grasshopper":    {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 5}},
     # Bagworm: stealth cloak, hides from radar
     "Bagworm":        {"price": 50,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3, "mobility": 1}},
@@ -258,9 +258,9 @@ def generate_profile_card(username, avatar_path, trion, side_effect,
 
     WHITE = (255, 255, 255)
     draw.text((140, 20),  username,                                               fill=WHITE, font=font_title)
-    cls_info = f"  [{CLASSES[agent_class][\'emoji\']} {agent_class}]" if agent_class and agent_class in CLASSES else ""
+    cls_info = f"  [{CLASSES[agent_class]['emoji']} {agent_class}]" if agent_class and agent_class in CLASSES else ""
     draw.text((140, 55),  f"🔋 Trion: {trion}{cls_info}",                         fill=WHITE, font=font_small)
-    draw.text((140, 80),  f"🧬 Side Effect: {side_effect or \'None\'}",            fill=WHITE, font=font_small)
+    draw.text((140, 80),  f"🧬 Side Effect: {side_effect or 'None'}",            fill=WHITE, font=font_small)
     draw.text((140, 105), f"🎰 Spins: {spins}   💳 Credits: {credits}",           fill=WHITE, font=font_small)
     draw.text((140, 130), f"🏆 ELO: {elo}   W/L: {wins}/{losses}",                fill=WHITE, font=font_small)
 
@@ -306,8 +306,8 @@ class ShopView(discord.ui.View):
         for name, data in page_entries:
             buff_text = ", ".join(f"{k}+{v}" for k, v in data["buffs"].items())
             embed.add_field(
-                name=f"⚙️ {name}  ({data[\'type\'].capitalize()})",
-                value=f"💰 **{data[\'price\']} Credits**  ⚡ Trion Cost: {data[\'trion_cost\']}\n📊 {buff_text}",
+                name=f"⚙️ {name}  ({data['type'].capitalize()})",
+                value=f"💰 **{data['price']} Credits**  ⚡ Trion Cost: {data['trion_cost']}\n📊 {buff_text}",
                 inline=False)
         embed.set_footer(text=f"Page {self.page+1}/{self.total_pages} · /buytrigger <name> to purchase")
         return embed
@@ -359,9 +359,9 @@ class SideEffectsView(discord.ui.View):
         for rarity, effect in page_entries:
             colour  = "🟡" if rarity == "Rare" else "🔵"
             buffs   = ", ".join(f"{k}+{v}" for k, v in effect["buffs"].items())
-            passive = f"\n✨ Passive: **{effect[\'passive\']}**" if "passive" in effect else ""
+            passive = f"\n✨ Passive: **{effect['passive']}**" if "passive" in effect else ""
             embed.add_field(
-                name=f"{colour} {effect[\'name\']}  [{rarity}]",
+                name=f"{colour} {effect['name']}  [{rarity}]",
                 value=f"📊 {buffs}{passive}",
                 inline=False)
         embed.set_footer(text=f"Page {self.page+1}/{self.total_pages}")
@@ -433,7 +433,7 @@ async def init_db():
         await db.execute("""
             CREATE TABLE IF NOT EXISTS story_progress (
                 user_id INTEGER PRIMARY KEY,
-                arc TEXT DEFAULT \'Prologue\',
+                arc TEXT DEFAULT 'Prologue',
                 chapter INTEGER DEFAULT 1,
                 mission INTEGER DEFAULT 1
             )""")
@@ -467,7 +467,7 @@ async def init_db():
                 squad_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT UNIQUE,
                 leader_id INTEGER,
-                division TEXT DEFAULT \'C-Rank\',
+                division TEXT DEFAULT 'C-Rank',
                 elo INTEGER DEFAULT 1000
             )""")
         await db.execute("""
@@ -583,7 +583,7 @@ async def joinborder(interaction: discord.Interaction):
         side_json = json.dumps(side) if side else None
 
         # INSERT OR IGNORE on all three so partial rows from a previous failed attempt
-        # don\'t block re-registration
+        # don't block re-registration
         await db.execute(
             "INSERT OR IGNORE INTO agents (user_id,trion,side_effect,spins,credits,elo,wins,losses) VALUES (?,?,?,?,?,?,?,?)",
             (user_id, trion, side_json, 5, 100, 1000, 0, 0))
@@ -638,11 +638,11 @@ async def setclass(interaction: discord.Interaction, class_name: str):
 
     cls = CLASSES[matched]
     embed = discord.Embed(
-        title=f"{cls[\'emoji\']} Class Set: {matched}",
+        title=f"{cls['emoji']} Class Set: {matched}",
         description=cls["description"],
         color=COLOR)
     embed.add_field(name="⚡ Strong Against", value=cls["strong_against"])
-    embed.add_field(name="💥 Advantage",      value=f"+{int((CLASS_ADVANTAGE_MULT-1)*100)}% damage vs {cls[\'strong_against\']}")
+    embed.add_field(name="💥 Advantage",      value=f"+{int((CLASS_ADVANTAGE_MULT-1)*100)}% damage vs {cls['strong_against']}")
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
@@ -655,8 +655,8 @@ async def classes(interaction: discord.Interaction):
                           color=COLOR)
     for name, data in CLASSES.items():
         embed.add_field(
-            name=f"{data[\'emoji\']} {name}",
-            value=f"Strong vs **{data[\'strong_against\']}**\n{data[\'description\']}",
+            name=f"{data['emoji']} {name}",
+            value=f"Strong vs **{data['strong_against']}**\n{data['description']}",
             inline=False)
     await interaction.response.send_message(embed=embed)
 
@@ -800,7 +800,7 @@ async def loadout(interaction: discord.Interaction):
     for trig, slot in data:
         equipped[slot] = trig
 
-    embed = discord.Embed(title=f"⚡ {interaction.user.display_name}\'s Loadout", color=COLOR)
+    embed = discord.Embed(title=f"⚡ {interaction.user.display_name}'s Loadout", color=COLOR)
     for slot in LOADOUT_SLOTS:
         embed.add_field(name=f"{slot} Trigger", value=equipped[slot], inline=False)
     embed.set_footer(text="Main-type triggers: Main or Sub slot | Optional triggers: Optional slot only")
@@ -843,7 +843,7 @@ async def equip(interaction: discord.Interaction, trigger: str, slot: str):
         cursor = await db.execute("SELECT 1 FROM triggers WHERE user_id=? AND trigger=?", (user_id, trigger))
         if not await cursor.fetchone():
             await interaction.response.send_message(
-                f"You don\'t own **{trigger}**. Buy it with `/buytrigger {trigger}`.", ephemeral=True)
+                f"You don't own **{trigger}**. Buy it with `/buytrigger {trigger}`.", ephemeral=True)
             return
 
         await db.execute(
@@ -993,9 +993,9 @@ async def upgradestat(interaction: discord.Interaction, stat: str):
 
         if used >= cap:
             next_rank = "B-Rank" if rank == "C-Rank" else "A-Rank" if rank == "B-Rank" else None
-            msg = f"You\'ve hit the **{rank}** stat cap ({cap} points)."
+            msg = f"You've hit the **{rank}** stat cap ({cap} points)."
             if next_rank:
-                msg += f" Reach **{next_rank}** (ELO {1200 if next_rank == \'B-Rank\' else 1600}) to unlock more."
+                msg += f" Reach **{next_rank}** (ELO {1200 if next_rank == 'B-Rank' else 1600}) to unlock more."
             await interaction.response.send_message(
                 embed=discord.Embed(title="⛔ Stat Cap Reached", description=msg, color=0xe74c3c),
                 ephemeral=True)
@@ -1008,7 +1008,7 @@ async def upgradestat(interaction: discord.Interaction, stat: str):
 
     await interaction.response.send_message(
         embed=discord.Embed(title="✅ Stat Upgraded",
-                            description=f"**{stat.replace(\'_\', \' \').title()}** increased by 1.",
+                            description=f"**{stat.replace('_', ' ').title()}** increased by 1.",
                             color=COLOR))
 
 # ============================================================
@@ -1128,8 +1128,8 @@ async def _run_battle(channel, user1, stats1, user2, stats2, pvp=True):
 
     name1     = user1.display_name
     name2     = user2.display_name if pvp else user2
-    cls1_tag  = f" [{CLASSES[class1][\'emoji\']}]" if class1 and class1 in CLASSES else ""
-    cls2_tag  = f" [{CLASSES[class2][\'emoji\']}]" if class2 and class2 in CLASSES else ""
+    cls1_tag  = f" [{CLASSES[class1]['emoji']}]" if class1 and class1 in CLASSES else ""
+    cls2_tag  = f" [{CLASSES[class2]['emoji']}]" if class2 and class2 in CLASSES else ""
 
     # Class advantage note
     advantage_note = ""
@@ -1153,7 +1153,7 @@ async def _run_battle(channel, user1, stats1, user2, stats2, pvp=True):
         log += f"🏆 **Winner: {name2}**"
     else:
         new_elo1 = elo1; new_elo2 = elo2
-        log += "⚔️ **It\'s a tie!**"
+        log += "⚔️ **It's a tie!**"
 
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
@@ -1191,7 +1191,7 @@ async def story(interaction: discord.Interaction):
     if not mission_data:
         await interaction.response.send_message(
             embed=discord.Embed(title="📖 Story Mode",
-                                description="You\'ve completed all current missions. More coming soon!",
+                                description="You've completed all current missions. More coming soon!",
                                 color=COLOR))
         return
 
@@ -1248,7 +1248,7 @@ async def mission(interaction: discord.Interaction):
         await _story_exploration(interaction, desc, r_type, r_amount, r_trigger)
 
     if not completed:
-        return  # arena mission returned False (not registered) — don\'t advance
+        return  # arena mission returned False (not registered) — don't advance
 
     # Always advance progress after the mission runs
     try:
@@ -1458,9 +1458,9 @@ async def squadinfo(interaction: discord.Interaction):
     for uid, role in members:
         try:
             user = await bot.fetch_user(uid)
-            member_lines += f"{user.name} — {role}\\n"
+            member_lines += f"{user.name} — {role}\n"
         except Exception:
-            member_lines += f"Unknown ({uid}) — {role}\\n"
+            member_lines += f"Unknown ({uid}) — {role}\n"
 
     embed = discord.Embed(title=f"🛡 Squad: {name}", color=COLOR)
     embed.add_field(name="Division", value=division)
