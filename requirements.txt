@@ -1,0 +1,5 @@
+discord.py==2.7.1
+aiosqlite==0.22.1
+python-dotenv==1.2.2
+aiohttp==3.13.3
+Pillow==10.4.0
