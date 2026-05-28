@@ -24,28 +24,55 @@ COLOR   = 0x1abc9c
 # DATA — TRIGGERS
 # ============================================================
 TRIGGERS = {
-    # Main
-    "Grasshopper":    {"price": 50,  "trion_cost": 1, "type": "main",     "buffs": {"mobility": 2}},
-    "Escudo":         {"price": 40,  "trion_cost": 2, "type": "main",     "buffs": {"defense": 3}},
-    "Trion Cannon":   {"price": 150, "trion_cost": 5, "type": "main",     "buffs": {"attack": 5, "trion_control": 2}},
-    "Escalator":      {"price": 90,  "trion_cost": 2, "type": "main",     "buffs": {"attack": 3, "mobility": 2}},
-    "Gunner":         {"price": 70,  "trion_cost": 1, "type": "main",     "buffs": {"attack": 4}},
-    "Lava Trigger":   {"price": 120, "trion_cost": 3, "type": "main",     "buffs": {"attack": 5, "defense": 2}},
-    # Sub
-    "Spider":         {"price": 60,  "trion_cost": 1, "type": "sub",      "buffs": {"attack": 2}},
-    "Bagworm":        {"price": 70,  "trion_cost": 2, "type": "sub",      "buffs": {"mobility": 1, "attack": 1}},
-    "Homing Missile": {"price": 80,  "trion_cost": 2, "type": "sub",      "buffs": {"attack": 3}},
-    "Spider Bite":    {"price": 100, "trion_cost": 3, "type": "sub",      "buffs": {"attack": 4}},
-    "Bagworm Trap":   {"price": 100, "trion_cost": 2, "type": "sub",      "buffs": {"mobility": 2, "attack": 1}},
-    "Spinner":        {"price": 90,  "trion_cost": 1, "type": "sub",      "buffs": {"attack": 2}},
-    "Sniper Shot":    {"price": 80,  "trion_cost": 2, "type": "sub",      "buffs": {"attack": 3}},
-    # Optional
-    "Chameleon":      {"price": 80,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3}},
+    # ── Attacker Triggers (Main) ──────────────────────────────
+    # Kogetsu: katana-type attacker trigger, most common blade
+    "Kogetsu":        {"price": 80,  "trion_cost": 2, "type": "main", "buffs": {"attack": 5, "defense": 1}},
+    # Raygust: heavy blade/shield hybrid used by Osamu
+    "Raygust":        {"price": 90,  "trion_cost": 3, "type": "main", "buffs": {"attack": 3, "defense": 4}},
+    # Scorpion: shapeshifting blade used by Yuma, high mobility
+    "Scorpion":       {"price": 100, "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "mobility": 3}},
+
+    # ── Shooter Triggers (Main) ───────────────────────────────
+    # Asteroid: standard straight-line trion bullet, bread and butter
+    "Asteroid":       {"price": 50,  "trion_cost": 1, "type": "main", "buffs": {"attack": 3}},
+    # Meteor: explosive trion bullet, area damage
+    "Meteor":         {"price": 80,  "trion_cost": 3, "type": "main", "buffs": {"attack": 5, "trion_control": 1}},
+    # Hound: homing trion bullet, tracks target
+    "Hound":          {"price": 90,  "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "intelligence": 1}},
+    # Viper: custom-trajectory bullet, high skill ceiling
+    "Viper":          {"price": 120, "trion_cost": 3, "type": "main", "buffs": {"attack": 4, "intelligence": 2}},
+
+    # ── Sniper Triggers (Main) ────────────────────────────────
+    # Ibis: heaviest sniper, massive damage, used by Chika
+    "Ibis":           {"price": 150, "trion_cost": 5, "type": "main", "buffs": {"attack": 8, "trion_control": 2}},
+    # Egret: balanced sniper, good range and power
+    "Egret":          {"price": 100, "trion_cost": 3, "type": "main", "buffs": {"attack": 5, "perception": 1}},
+    # Lightning: fastest sniper bullet, low trion cost
+    "Lightning":      {"price": 80,  "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "mobility": 1}},
+
+    # ── Optional Triggers ─────────────────────────────────────
+    # Grasshopper: creates jump pads, extreme mobility boost (Yuma's signature)
+    "Grasshopper":    {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 5}},
+    # Bagworm: stealth cloak, hides from radar
+    "Bagworm":        {"price": 50,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3, "mobility": 1}},
+    # Shield: standard defense barrier
+    "Shield":         {"price": 40,  "trion_cost": 1, "type": "optional", "buffs": {"defense": 4}},
+    # Chameleon: full invisibility, higher trion cost than Bagworm
+    "Chameleon":      {"price": 90,  "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}},
+    # Spider: wire trap trigger, slows and damages enemies
+    "Spider":         {"price": 70,  "trion_cost": 2, "type": "optional", "buffs": {"attack": 2, "intelligence": 1}},
+    # Escudo: defensive barrier that bursts outward, pushes enemies
+    "Escudo":         {"price": 75,  "trion_cost": 2, "type": "optional", "buffs": {"defense": 5, "attack": 1}},
+    # Thruster: rocket booster used by Murakami, burst movement
+    "Thruster":       {"price": 80,  "trion_cost": 2, "type": "optional", "buffs": {"mobility": 4, "attack": 1}},
+    # Silencer: suppresses trion bullet sound, sniper support
+    "Silencer":       {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 2, "perception": 1}},
+    # Dummy Beacon: creates a fake radar signal to confuse enemies
+    "Dummy Beacon":   {"price": 55,  "trion_cost": 1, "type": "optional", "buffs": {"intelligence": 3}},
+
+    # ── Custom / Non-Canon ────────────────────────────────────
     "Shadow Cloak":   {"price": 120, "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}},
-    "Silent Step":    {"price": 90,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 3, "evasion": 2}},
-    "Wallbreaker":    {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 2}},
-    "Shield":         {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"defense": 3}},
-    "Bagworm Stealth":{"price": 75,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 2, "evasion": 1}},
+    "Wallbreaker":    {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 3}},
 }
 
 # ============================================================
@@ -932,11 +959,34 @@ async def mission(interaction: discord.Interaction):
     elif m_type == "exploration":
         await _story_exploration(interaction, desc, r_type, r_amount, r_trigger)
 
-    if not replayable:
-        async with aiosqlite.connect(DB_NAME) as db:
+    # Always advance — replayable means rewards given every time, not that progress freezes
+    async with aiosqlite.connect(DB_NAME) as db:
+        next_mission = mission_num + 1
+
+        cursor = await db.execute(
+            "SELECT 1 FROM story_missions WHERE arc=? AND chapter=? AND mission=?",
+            (arc, chapter, next_mission))
+        exists = await cursor.fetchone()
+
+        if exists:
             await db.execute(
-                "UPDATE story_progress SET mission = mission + 1 WHERE user_id=?", (user_id,))
-            await db.commit()
+                "UPDATE story_progress SET mission=? WHERE user_id=?",
+                (next_mission, user_id))
+        else:
+            # No more missions in this chapter — try next chapter
+            next_chapter = chapter + 1
+            cursor = await db.execute(
+                "SELECT 1 FROM story_missions WHERE arc=? AND chapter=?",
+                (arc, next_chapter))
+            chapter_exists = await cursor.fetchone()
+
+            if chapter_exists:
+                await db.execute(
+                    "UPDATE story_progress SET chapter=?, mission=1 WHERE user_id=?",
+                    (next_chapter, user_id))
+            # else: all chapters done, /story will show completion message
+
+        await db.commit()
 
 async def _story_arena_mission(interaction, m_type, r_type, r_amount, r_trigger):
     user_id = interaction.user.id
