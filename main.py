@@ -1,5 +1,5 @@
 # ============================================================
-# WORLD TRIGGER BORDER BOT – Complete Rewrite v2
+# WORLD TRIGGER BORDER BOT — Ultimate Merged Version
 # ============================================================
 import discord
 from discord import app_commands
@@ -11,10 +11,27 @@ import random
 import time
 import os
 import traceback
+import sys
+
+# Optional Pillow / aiohttp imports for profile card
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+
+try:
+    import aiohttp
+    AIOHTTP_AVAILABLE = True
+except ImportError:
+    AIOHTTP_AVAILABLE = False
+
+from dotenv import load_dotenv
 
 # ============================================================
 # CONFIG
 # ============================================================
+load_dotenv()
 TOKEN   = os.getenv("TOKEN")
 DB_NAME = "world_trigger.db"
 COLOR   = 0x1abc9c
@@ -26,7 +43,7 @@ FACTIONS = {
     "Kido": {
         "emoji": "🛡️",
         "description": "Believe all Neighbors are enemies and must be completely destroyed.",
-        "buffs": {"attack": 1}               # small thematic bonus
+        "buffs": {"attack": 1}
     },
     "Shinoda": {
         "emoji": "⚖️",
@@ -41,7 +58,7 @@ FACTIONS = {
 }
 
 # ============================================================
-# DATA — CLASSES (Rock‑Paper‑Scissors)
+# DATA — CLASSES
 # ============================================================
 CLASSES = {
     "Attacker":    {"emoji": "⚔️",  "strong_against": "Sniper",
@@ -85,7 +102,7 @@ TRIGGERS = {
 }
 
 # ============================================================
-# DATA — NEIGHBORS (weakened to avoid one‑shots)
+# DATA — NEIGHBORS (weakened)
 # ============================================================
 NEIGHBORS = {
     "Bamster": {"hp": 30, "damage": 6},
@@ -165,7 +182,7 @@ def lose_elo(current):
     return max(current - random.randint(15, 30), 0)
 
 # ============================================================
-# UTILITY — DAMAGE CALCULATION (includes faction buffs now)
+# UTILITY — DAMAGE CALCULATION (faction buffs included)
 # ============================================================
 async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stats=None,
                             attacker_class=None, defender_class=None, faction=None):
@@ -196,7 +213,7 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
                                "evasion": 1, "intelligence": 3, "trion_control": 4, "perception": 2}
                     buff += value * weights.get(stat, 1)
 
-    # Faction buff (only if user has a faction)
+    # Faction buff
     if faction and faction in FACTIONS:
         faction_buffs = FACTIONS[faction].get("buffs", {})
         for stat, value in faction_buffs.items():
@@ -246,7 +263,60 @@ async def gain_trigger_xp(db, user_id, trigger_name, amount=10):
         )
 
 # ============================================================
-# UI — PAGINATED VIEWS (Shop / Side Effects)
+# UTILITY — PROFILE CARD (Pillow) — preserved as /profilecard
+# ============================================================
+TEMP_FOLDER = "temp_profiles"
+if PIL_AVAILABLE:
+    os.makedirs(TEMP_FOLDER, exist_ok=True)
+
+def generate_profile_card(username, avatar_path, trion, side_effect,
+                           spins, credits, elo, wins, losses,
+                           stats, triggers, story_arc, story_mission, user_id, agent_class=None, faction=None):
+    if not PIL_AVAILABLE:
+        return None
+    temp_file = os.path.join(TEMP_FOLDER, f"{user_id}.png")
+    if os.path.exists(temp_file):
+        os.remove(temp_file)
+
+    card = Image.new("RGB", (600, 420), (26, 188, 156))
+    draw = ImageDraw.Draw(card)
+
+    try:
+        font_title = ImageFont.truetype("arial.ttf", 28)
+        font_small = ImageFont.truetype("arial.ttf", 18)
+    except Exception:
+        font_title = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+
+    avatar = Image.open(avatar_path).convert("RGBA").resize((100, 100))
+    mask   = Image.new("L", avatar.size, 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, 100, 100), fill=255)
+    card.paste(avatar, (20, 20), mask)
+
+    WHITE = (255, 255, 255)
+    draw.text((140, 20),  username, fill=WHITE, font=font_title)
+    cls_info = f"  [{CLASSES[agent_class]['emoji']} {agent_class}]" if agent_class and agent_class in CLASSES else ""
+    draw.text((140, 55),  f"🔋 Trion: {trion}{cls_info}", fill=WHITE, font=font_small)
+    draw.text((140, 80),  f"🧬 Side Effect: {side_effect or 'None'}", fill=WHITE, font=font_small)
+    draw.text((140, 105), f"🎰 Spins: {spins}   💳 Credits: {credits}", fill=WHITE, font=font_small)
+    draw.text((140, 130), f"🏆 ELO: {elo}   W/L: {wins}/{losses}", fill=WHITE, font=font_small)
+    if faction:
+        draw.text((140, 155), f"🏛️ Faction: {faction}", fill=WHITE, font=font_small)
+
+    y = 190
+    for name, val in stats.items():
+        draw.text((20, y), f"🔹 {name}: {val}", fill=WHITE, font=font_small)
+        y += 25
+
+    trigger_text = " | ".join(triggers) if triggers else "None"
+    draw.text((20, y + 10), f"🎯 Triggers: {trigger_text}", fill=WHITE, font=font_small)
+    draw.text((20, y + 35), f"📖 Story: {story_arc} → {story_mission}", fill=WHITE, font=font_small)
+
+    card.save(temp_file)
+    return temp_file
+
+# ============================================================
+# UI — PAGINATED VIEWS
 # ============================================================
 TRIGGERS_PER_PAGE = 5
 
@@ -346,7 +416,7 @@ class SideEffectsView(discord.ui.View):
         await interaction.response.edit_message(embed=self.get_embed(), view=self)
 
 # ============================================================
-# DATABASE SETUP
+# DATABASE SETUP — all tables from both versions
 # ============================================================
 async def init_db():
     async with aiosqlite.connect(DB_NAME) as db:
@@ -363,7 +433,6 @@ async def init_db():
                 class TEXT DEFAULT NULL,
                 faction TEXT DEFAULT NULL
             )""")
-        # Migrations
         for col in ["class", "faction"]:
             try:
                 await db.execute(f"ALTER TABLE agents ADD COLUMN {col} TEXT DEFAULT NULL")
@@ -382,6 +451,16 @@ async def init_db():
                 trigger TEXT,
                 slot TEXT,
                 PRIMARY KEY (user_id, slot)
+            )""")
+        # Keep both the old redeem_codes definition table and the new redeemed tracking table
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS redeem_codes (
+                code TEXT PRIMARY KEY,
+                reward_type TEXT,
+                reward_amount INTEGER,
+                reward_trigger TEXT,
+                max_uses INTEGER,
+                expires TIMESTAMP
             )""")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS redeemed_codes (
@@ -445,7 +524,6 @@ async def init_db():
             )""")
         await db.commit()
 
-        # Populate story missions if empty
         cursor = await db.execute("SELECT COUNT(*) FROM story_missions")
         if (await cursor.fetchone())[0] == 0:
             await populate_story(db)
@@ -508,7 +586,7 @@ MAIN_COMPATIBLE_SLOTS = ["Main", "Sub"]
 OPT_COMPATIBLE_SLOTS = ["Optional"]
 
 # ============================================================
-# HELPER: ensure agent exists
+# HELPER
 # ============================================================
 async def agent_required(interaction: discord.Interaction, db):
     cursor = await db.execute("SELECT user_id FROM agents WHERE user_id=?", (interaction.user.id,))
@@ -518,17 +596,18 @@ async def agent_required(interaction: discord.Interaction, db):
     return True
 
 # ============================================================
-# /help  — new command
+# /help
 # ============================================================
 @bot.tree.command(name="help", description="Show all available commands")
 async def help_cmd(interaction: discord.Interaction):
     embed = discord.Embed(title="🛡️ Border Trigger Bot Commands", color=COLOR)
-    embed.add_field(name="Getting Started", value="`/joinborder` `/setclass` `/faction` `/profile`", inline=False)
+    embed.add_field(name="Getting Started", value="`/joinborder` `/setclass` `/faction` `/profile` `/profilecard`", inline=False)
     embed.add_field(name="Combat & Progression", value="`/arena` `/duel` `/bailout` `/simulation` `/combostats`", inline=False)
     embed.add_field(name="Story Mode", value="`/story` `/mission`", inline=False)
     embed.add_field(name="Triggers & Shop", value="`/shop` `/buytrigger` `/equip` `/loadout`", inline=False)
     embed.add_field(name="Stats & Ranking", value="`/stats` `/upgradestat` `/trionrank` `/leaderboard`", inline=False)
     embed.add_field(name="Side Effects", value="`/sideeffects` `/spin`", inline=False)
+    embed.add_field(name="Classes", value="`/classes`", inline=False)
     embed.add_field(name="Squads", value="`/squadcreate` `/squadinvite` `/squadinfo` `/squadleave`", inline=False)
     embed.add_field(name="Other", value="`/triggers_mastered` `/neighborhood` `/baseinfo` `/trainers` `/train` `/redeem`", inline=False)
     embed.set_footer(text="Use /command for more details.")
@@ -541,7 +620,7 @@ async def help_cmd(interaction: discord.Interaction):
 async def joinborder(interaction: discord.Interaction):
     user_id = interaction.user.id
     async with aiosqlite.connect(DB_NAME) as db:
-        if await agent_required(interaction, db):  # already registered -> stop
+        if await agent_required(interaction, db):
             await interaction.response.send_message(
                 embed=discord.Embed(title="⚠️ Already Registered",
                                     description="You are already a Border agent.",
@@ -584,7 +663,6 @@ async def setclass(interaction: discord.Interaction, class_name: str):
                                 description=f"Choose from: {', '.join(CLASSES.keys())}",
                                 color=0xe74c3c), ephemeral=True)
         return
-
     async with aiosqlite.connect(DB_NAME) as db:
         if not await agent_required(interaction, db):
             return
@@ -598,7 +676,7 @@ async def setclass(interaction: discord.Interaction, class_name: str):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /faction  — new command (replaces branch)
+# /faction
 # ============================================================
 @bot.tree.command(name="faction", description="Join a Border faction")
 @app_commands.describe(faction_name="Kido / Shinoda / Tamakoma")
@@ -611,7 +689,6 @@ async def faction(interaction: discord.Interaction, faction_name: str):
                                 description=f"Choose from: {names}",
                                 color=0xe74c3c), ephemeral=True)
         return
-
     async with aiosqlite.connect(DB_NAME) as db:
         if not await agent_required(interaction, db):
             return
@@ -628,7 +705,22 @@ async def faction(interaction: discord.Interaction, faction_name: str):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /profile  — now shows faction
+# /classes
+# ============================================================
+@bot.tree.command(name="classes", description="View all Border combat classes and matchups")
+async def classes(interaction: discord.Interaction):
+    embed = discord.Embed(title="⚔️ Border Combat Classes",
+                          description=f"Each class deals **+{int((CLASS_ADVANTAGE_MULT-1)*100)}% damage** against its counter.\nUse `/setclass` to choose yours.",
+                          color=COLOR)
+    for name, data in CLASSES.items():
+        embed.add_field(
+            name=f"{data['emoji']} {name}",
+            value=f"Strong vs **{data['strong_against']}**\n{data['description']}",
+            inline=False)
+    await interaction.response.send_message(embed=embed)
+
+# ============================================================
+# /profile (embed)
 # ============================================================
 @bot.tree.command(name="profile", description="View your agent profile")
 async def profile(interaction: discord.Interaction):
@@ -679,7 +771,65 @@ async def profile(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /shop, /sideeffects, /buytrigger, /loadout, /equip (unchanged)
+# /profilecard (Pillow image) — preserved from original
+# ============================================================
+@bot.tree.command(name="profilecard", description="View your agent profile as a card (image)")
+async def profilecard(interaction: discord.Interaction):
+    if not PIL_AVAILABLE or not AIOHTTP_AVAILABLE:
+        await interaction.response.send_message("Profile card feature is not available (missing Pillow or aiohttp).", ephemeral=True)
+        return
+
+    user_id = interaction.user.id
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute(
+            "SELECT trion, side_effect, spins, credits, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
+            (user_id,))
+        agent = await cursor.fetchone()
+        if not agent:
+            await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
+            return
+        trion, side, spins, credits, elo, wins, losses, agent_class, faction = agent
+
+        cursor = await db.execute(
+            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
+            (user_id,))
+        s = await cursor.fetchone()
+        stats = {"Attack": s[0], "Defense": s[1], "Mobility": s[2],
+                 "Intelligence": s[3], "Trion Control": s[4], "Perception": s[5]}
+
+        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
+        triggers = [row[0] for row in await cursor.fetchall()]
+
+        cursor = await db.execute("SELECT arc, mission FROM story_progress WHERE user_id=?", (user_id,))
+        story_row = await cursor.fetchone()
+        story_arc, story_mission = story_row if story_row else ("Prologue", 1)
+
+    avatar_url = interaction.user.display_avatar.url
+    avatar_path = f"temp_avatar_{user_id}.png"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(avatar_url) as resp:
+            with open(avatar_path, "wb") as f:
+                f.write(await resp.read())
+
+    card_path = await asyncio.to_thread(
+        generate_profile_card,
+        username=interaction.user.display_name,
+        avatar_path=avatar_path,
+        trion=trion, side_effect=side, spins=spins, credits=credits,
+        elo=elo, wins=wins, losses=losses, stats=stats, triggers=triggers,
+        story_arc=story_arc, story_mission=story_mission, user_id=user_id,
+        agent_class=agent_class, faction=faction)
+
+    if card_path:
+        await interaction.response.send_message(file=discord.File(card_path))
+    else:
+        await interaction.response.send_message("Could not generate profile card.", ephemeral=True)
+
+    if os.path.exists(avatar_path):
+        os.remove(avatar_path)
+
+# ============================================================
+# /shop, /sideeffects, /buytrigger, /loadout, /equip
 # ============================================================
 @bot.tree.command(name="shop", description="Browse the Border Trigger Shop")
 async def shop(interaction: discord.Interaction):
@@ -823,7 +973,7 @@ async def spin(interaction: discord.Interaction, spin_type: str):
                                     color=COLOR))
 
 # ============================================================
-# /stats, /upgradestat (unchanged)
+# /stats, /upgradestat
 # ============================================================
 @bot.tree.command(name="stats", description="View your agent stats")
 async def stats(interaction: discord.Interaction):
@@ -913,7 +1063,7 @@ async def leaderboard(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /arena  — rewards stat points, weak neighbours, uses faction
+# /arena — improved with stat points, weak neighbours, faction
 # ============================================================
 @bot.tree.command(name="arena", description="Enter Solo Arena matchmaking")
 async def arena(interaction: discord.Interaction):
@@ -1041,7 +1191,7 @@ async def _run_battle(channel, user1, stats1, user2, stats2, pvp=True):
     await channel.send(embed=discord.Embed(title="⚔️ Arena Battle", description=log, color=COLOR))
 
 # ============================================================
-# /redeem  — new command
+# /redeem — env-based redeem codes
 # ============================================================
 @bot.tree.command(name="redeem", description="Redeem a special code for rewards")
 @app_commands.describe(code="The code to redeem")
@@ -1061,7 +1211,6 @@ async def redeem(interaction: discord.Interaction, code: str):
         if await cursor.fetchone():
             await interaction.response.send_message("You have already redeemed this code.", ephemeral=True)
             return
-        # apply rewards
         credits = rewards.get("credits", 0)
         spins = rewards.get("spins", 0)
         triggers_list = rewards.get("triggers", [])
@@ -1081,7 +1230,7 @@ async def redeem(interaction: discord.Interaction, code: str):
                             color=COLOR))
 
 # ============================================================
-# STORY SYSTEM — completely reworked to fix progression
+# STORY SYSTEM — completely fixed progression
 # ============================================================
 @bot.tree.command(name="story", description="View your current story mission")
 async def story(interaction: discord.Interaction):
@@ -1150,7 +1299,6 @@ async def mission(interaction: discord.Interaction):
                                         desc, r_type, r_amount, r_trigger)
 
 async def _advance_story(db, user_id, arc, chapter, mission_num):
-    """Move to next mission, next chapter if needed."""
     next_mission = mission_num + 1
     cursor = await db.execute("SELECT 1 FROM story_missions WHERE arc=? AND chapter=? AND mission=?",
                               (arc, chapter, next_mission))
@@ -1163,7 +1311,6 @@ async def _advance_story(db, user_id, arc, chapter, mission_num):
         if await cursor.fetchone():
             await db.execute("UPDATE story_progress SET chapter=?, mission=1 WHERE user_id=?",
                              (next_chapter, user_id))
-        # else story complete, progress stays
 
 async def _give_rewards(db, user_id, r_type, r_amount, r_trigger, won=True):
     if not won:
@@ -1174,9 +1321,7 @@ async def _give_rewards(db, user_id, r_type, r_amount, r_trigger, won=True):
         await db.execute("UPDATE agents SET spins = spins + ? WHERE user_id=?", (r_amount, user_id))
     elif r_type == "trigger" and r_trigger:
         await db.execute("INSERT OR IGNORE INTO triggers (user_id, trigger) VALUES (?,?)", (user_id, r_trigger))
-    # extra stat point on story wins
     await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (user_id,))
-    # trigger mastery XP
     cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
     for trig in [row[0] for row in await cursor.fetchall()]:
         await gain_trigger_xp(db, user_id, trig, random.randint(8, 15))
@@ -1184,12 +1329,12 @@ async def _give_rewards(db, user_id, r_type, r_amount, r_trigger, won=True):
 async def _handle_story_arena(interaction, arc, chapter, mission_num, m_type, r_type, r_amount, r_trigger):
     user_id = interaction.user.id
     async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute("SELECT trion, side_effect FROM agents WHERE user_id=?", (user_id,))
+        cursor = await db.execute("SELECT trion, side_effect, faction FROM agents WHERE user_id=?", (user_id,))
         agent = await cursor.fetchone()
         if not agent:
             await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
             return
-        trion, side = agent
+        trion, side, faction = agent
         side = json.loads(side) if side else None
         cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
         triggers = [row[0] for row in await cursor.fetchall()]
@@ -1199,7 +1344,7 @@ async def _handle_story_arena(interaction, arc, chapter, mission_num, m_type, r_
         s = await cursor.fetchone()
     stats_dict = {"attack":s[0],"defense":s[1],"mobility":s[2],
                   "intelligence":s[3],"trion_control":s[4],"perception":s[5]} if s else {"attack":1,"defense":1,"mobility":1,"intelligence":1,"trion_control":1,"perception":1}
-    dmg1 = await calculate_damage(user_id, trion, side, triggers, stats_dict)
+    dmg1 = await calculate_damage(user_id, trion, side, triggers, stats_dict, faction=faction)
     wave_count = random.randint(2, 3) if m_type != "boss" else 1
     enemy_names = []
     total_enemy_dmg = 0
@@ -1229,7 +1374,6 @@ async def _handle_story_choice(interaction, arc, chapter, mission_num, choices_j
     async def choice_callback(interaction: discord.Interaction, choice_id: str):
         user_id = interaction.user.id
         async with aiosqlite.connect(DB_NAME) as db:
-            # Always advance story (choice itself doesn't fail)
             await _give_rewards(db, user_id, r_type, r_amount, r_trigger, True)
             await _advance_story(db, user_id, arc, chapter, mission_num)
             await db.commit()
@@ -1255,7 +1399,7 @@ async def _handle_story_exploration(interaction, arc, chapter, mission_num, desc
         await db.commit()
 
 # ============================================================
-# SQUAD COMMANDS (unchanged)
+# SQUAD COMMANDS
 # ============================================================
 @bot.tree.command(name="squadcreate", description="Create a squad")
 @app_commands.describe(name="Squad name")
@@ -1332,7 +1476,7 @@ async def squadleave(interaction: discord.Interaction):
     await interaction.response.send_message("Left squad.")
 
 # ============================================================
-# OTHER COMMANDS (bailout, trionrank, simulation, duel, etc.)
+# OTHER COMMANDS
 # ============================================================
 @bot.tree.command(name="bailout", description="Escape to safety with Bail Out — costs Trion")
 async def bailout(interaction: discord.Interaction):
