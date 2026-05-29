@@ -1,5 +1,5 @@
 # ============================================================
-# WORLD TRIGGER BORDER BOT — Ultimate Merged Version
+# WORLD TRIGGER BORDER BOT – Complete Turn‑Based Tactical Edition
 # ============================================================
 import discord
 from discord import app_commands
@@ -11,21 +11,6 @@ import random
 import time
 import os
 import traceback
-import sys
-
-# Optional Pillow / aiohttp imports for profile card
-try:
-    from PIL import Image, ImageDraw, ImageFont
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-
-try:
-    import aiohttp
-    AIOHTTP_AVAILABLE = True
-except ImportError:
-    AIOHTTP_AVAILABLE = False
-
 from dotenv import load_dotenv
 
 # ============================================================
@@ -75,30 +60,112 @@ CLASSES = {
 CLASS_ADVANTAGE_MULT = 1.3
 
 # ============================================================
-# DATA — TRIGGERS
+# DATA — TRIGGERS (now with skill trees / moves)
 # ============================================================
 TRIGGERS = {
-    "Kogetsu":        {"price": 80,  "trion_cost": 2, "type": "main", "buffs": {"attack": 5, "defense": 1}},
-    "Raygust":        {"price": 90,  "trion_cost": 3, "type": "main", "buffs": {"attack": 3, "defense": 4}},
-    "Scorpion":       {"price": 100, "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "mobility": 3}},
-    "Asteroid":       {"price": 50,  "trion_cost": 1, "type": "main", "buffs": {"attack": 3}},
-    "Meteor":         {"price": 80,  "trion_cost": 3, "type": "main", "buffs": {"attack": 5, "trion_control": 1}},
-    "Hound":          {"price": 90,  "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "intelligence": 1}},
-    "Viper":          {"price": 120, "trion_cost": 3, "type": "main", "buffs": {"attack": 4, "intelligence": 2}},
-    "Ibis":           {"price": 150, "trion_cost": 5, "type": "main", "buffs": {"attack": 8, "trion_control": 2}},
-    "Egret":          {"price": 100, "trion_cost": 3, "type": "main", "buffs": {"attack": 5, "perception": 1}},
-    "Lightning":      {"price": 80,  "trion_cost": 2, "type": "main", "buffs": {"attack": 4, "mobility": 1}},
-    "Grasshopper":    {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 5}},
-    "Bagworm":        {"price": 50,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3, "mobility": 1}},
-    "Shield":         {"price": 40,  "trion_cost": 1, "type": "optional", "buffs": {"defense": 4}},
-    "Chameleon":      {"price": 90,  "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}},
-    "Spider":         {"price": 70,  "trion_cost": 2, "type": "optional", "buffs": {"attack": 2, "intelligence": 1}},
-    "Escudo":         {"price": 75,  "trion_cost": 2, "type": "optional", "buffs": {"defense": 5, "attack": 1}},
-    "Thruster":       {"price": 80,  "trion_cost": 2, "type": "optional", "buffs": {"mobility": 4, "attack": 1}},
-    "Silencer":       {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 2, "perception": 1}},
-    "Dummy Beacon":   {"price": 55,  "trion_cost": 1, "type": "optional", "buffs": {"intelligence": 3}},
-    "Shadow Cloak":   {"price": 120, "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}},
-    "Wallbreaker":    {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 3}},
+    # Main triggers
+    "Kogetsu": {
+        "price": 80, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 5, "defense": 1},
+        "moves": [
+            {"name": "Slash",         "dmg": 1.0, "cost": 0, "level": 1},
+            {"name": "Senkū (Extend)", "dmg": 1.5, "cost": 1, "level": 3},
+            {"name": "Whirlwind",     "dmg": 1.8, "cost": 2, "level": 5}
+        ]
+    },
+    "Raygust": {
+        "price": 90, "trion_cost": 3, "type": "main",
+        "buffs": {"attack": 3, "defense": 4},
+        "moves": [
+            {"name": "Shield Bash",   "dmg": 0.8, "cost": 0, "level": 1},
+            {"name": "Raygust Slash", "dmg": 1.2, "cost": 1, "level": 2},
+            {"name": "Full Guard",    "defend": 2.0, "cost": 2, "level": 4}  # Full Guard is a defend move
+        ]
+    },
+    "Scorpion": {
+        "price": 100, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 4, "mobility": 3},
+        "moves": [
+            {"name": "Sting",        "dmg": 1.2, "cost": 0, "level": 1},
+            {"name": "Mole Claw",    "dmg": 1.5, "cost": 1, "level": 2},
+            {"name": "Scorpion Pin", "dmg": 1.7, "cost": 2, "level": 4}
+        ]
+    },
+    "Asteroid": {
+        "price": 50, "trion_cost": 1, "type": "main",
+        "buffs": {"attack": 3},
+        "moves": [
+            {"name": "Asteroid Shot", "dmg": 1.0, "cost": 0, "level": 1},
+            {"name": "Rapid Fire",    "dmg": 1.3, "cost": 1, "level": 2},
+            {"name": "Full Burst",    "dmg": 1.6, "cost": 2, "level": 4}
+        ]
+    },
+    "Meteor": {
+        "price": 80, "trion_cost": 3, "type": "main",
+        "buffs": {"attack": 5, "trion_control": 1},
+        "moves": [
+            {"name": "Meteor Bomb",  "dmg": 1.2, "cost": 0, "level": 1},
+            {"name": "Meteor Storm", "dmg": 1.5, "cost": 1, "level": 2},
+            {"name": "Meteor Crash", "dmg": 1.9, "cost": 2, "level": 5}
+        ]
+    },
+    "Hound": {
+        "price": 90, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 4, "intelligence": 1},
+        "moves": [
+            {"name": "Hound Chaser", "dmg": 1.1, "cost": 0, "level": 1},
+            {"name": "Hound Volley", "dmg": 1.4, "cost": 1, "level": 2},
+            {"name": "Hound Swarm",  "dmg": 1.6, "cost": 2, "level": 4}
+        ]
+    },
+    "Viper": {
+        "price": 120, "trion_cost": 3, "type": "main",
+        "buffs": {"attack": 4, "intelligence": 2},
+        "moves": [
+            {"name": "Viper Bite",   "dmg": 1.2, "cost": 0, "level": 1},
+            {"name": "Viper Path",   "dmg": 1.5, "cost": 1, "level": 2},
+            {"name": "Viper Cage",   "dmg": 1.8, "cost": 2, "level": 4}
+        ]
+    },
+    "Ibis": {
+        "price": 150, "trion_cost": 5, "type": "main",
+        "buffs": {"attack": 8, "trion_control": 2},
+        "moves": [
+            {"name": "Ibis Pierce",  "dmg": 1.5, "cost": 0, "level": 1},
+            {"name": "Ibis Break",   "dmg": 2.0, "cost": 2, "level": 3},
+            {"name": "Ibis Siege",   "dmg": 2.5, "cost": 3, "level": 5}
+        ]
+    },
+    "Egret": {
+        "price": 100, "trion_cost": 3, "type": "main",
+        "buffs": {"attack": 5, "perception": 1},
+        "moves": [
+            {"name": "Egret Snipe",  "dmg": 1.2, "cost": 0, "level": 1},
+            {"name": "Egret Focus",  "dmg": 1.5, "cost": 1, "level": 2},
+            {"name": "Egret Eagle",  "dmg": 1.8, "cost": 2, "level": 4}
+        ]
+    },
+    "Lightning": {
+        "price": 80, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 4, "mobility": 1},
+        "moves": [
+            {"name": "Lightning Bolt", "dmg": 1.1, "cost": 0, "level": 1},
+            {"name": "Lightning Flash","dmg": 1.4, "cost": 1, "level": 2},
+            {"name": "Lightning Storm","dmg": 1.7, "cost": 2, "level": 4}
+        ]
+    },
+    # Optional triggers (no moves, just passives)
+    "Grasshopper":    {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 5}, "moves": []},
+    "Bagworm":        {"price": 50,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3, "mobility": 1}, "moves": []},
+    "Shield":         {"price": 40,  "trion_cost": 1, "type": "optional", "buffs": {"defense": 4}, "moves": []},
+    "Chameleon":      {"price": 90,  "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}, "moves": []},
+    "Spider":         {"price": 70,  "trion_cost": 2, "type": "optional", "buffs": {"attack": 2, "intelligence": 1}, "moves": []},
+    "Escudo":         {"price": 75,  "trion_cost": 2, "type": "optional", "buffs": {"defense": 5, "attack": 1}, "moves": []},
+    "Thruster":       {"price": 80,  "trion_cost": 2, "type": "optional", "buffs": {"mobility": 4, "attack": 1}, "moves": []},
+    "Silencer":       {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 2, "perception": 1}, "moves": []},
+    "Dummy Beacon":   {"price": 55,  "trion_cost": 1, "type": "optional", "buffs": {"intelligence": 3}, "moves": []},
+    "Shadow Cloak":   {"price": 120, "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5}, "moves": []},
+    "Wallbreaker":    {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 3}, "moves": []},
 }
 
 # ============================================================
@@ -182,10 +249,10 @@ def lose_elo(current):
     return max(current - random.randint(15, 30), 0)
 
 # ============================================================
-# UTILITY — DAMAGE CALCULATION (faction buffs included)
+# UTILITY — DAMAGE CALCULATION (now with move support)
 # ============================================================
 async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stats=None,
-                            attacker_class=None, defender_class=None, faction=None):
+                            attacker_class=None, defender_class=None, faction=None, move=None):
     if stats is None:
         stats = {"attack": 1, "defense": 1, "mobility": 1,
                  "intelligence": 1, "trion_control": 1, "perception": 1}
@@ -213,7 +280,6 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
                                "evasion": 1, "intelligence": 3, "trion_control": 4, "perception": 2}
                     buff += value * weights.get(stat, 1)
 
-    # Faction buff
     if faction and faction in FACTIONS:
         faction_buffs = FACTIONS[faction].get("buffs", {})
         for stat, value in faction_buffs.items():
@@ -230,6 +296,10 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
 
     damage = base + buff + random.randint(0, 10)
 
+    # Apply move multiplier
+    if move and "dmg" in move:
+        damage *= move["dmg"]
+
     if side_effect and side_effect.get("passive") == "crit":
         if random.random() < 0.2:
             damage *= 1.5
@@ -239,7 +309,7 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
         if cls and cls["strong_against"] == defender_class:
             damage *= CLASS_ADVANTAGE_MULT
 
-    return damage
+    return int(damage)
 
 # ============================================================
 # UTILITY — TRIGGER MASTERY
@@ -263,160 +333,306 @@ async def gain_trigger_xp(db, user_id, trigger_name, amount=10):
         )
 
 # ============================================================
-# UTILITY — PROFILE CARD (Pillow) — preserved as /profilecard
+# TURN‑BASED BATTLE VIEW (PvE)
 # ============================================================
-TEMP_FOLDER = "temp_profiles"
-if PIL_AVAILABLE:
-    os.makedirs(TEMP_FOLDER, exist_ok=True)
-
-def generate_profile_card(username, avatar_path, trion, side_effect,
-                           spins, credits, elo, wins, losses,
-                           stats, triggers, story_arc, story_mission, user_id, agent_class=None, faction=None):
-    if not PIL_AVAILABLE:
-        return None
-    temp_file = os.path.join(TEMP_FOLDER, f"{user_id}.png")
-    if os.path.exists(temp_file):
-        os.remove(temp_file)
-
-    card = Image.new("RGB", (600, 420), (26, 188, 156))
-    draw = ImageDraw.Draw(card)
-
-    try:
-        font_title = ImageFont.truetype("arial.ttf", 28)
-        font_small = ImageFont.truetype("arial.ttf", 18)
-    except Exception:
-        font_title = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-
-    avatar = Image.open(avatar_path).convert("RGBA").resize((100, 100))
-    mask   = Image.new("L", avatar.size, 0)
-    ImageDraw.Draw(mask).ellipse((0, 0, 100, 100), fill=255)
-    card.paste(avatar, (20, 20), mask)
-
-    WHITE = (255, 255, 255)
-    draw.text((140, 20),  username, fill=WHITE, font=font_title)
-    cls_info = f"  [{CLASSES[agent_class]['emoji']} {agent_class}]" if agent_class and agent_class in CLASSES else ""
-    draw.text((140, 55),  f"🔋 Trion: {trion}{cls_info}", fill=WHITE, font=font_small)
-    draw.text((140, 80),  f"🧬 Side Effect: {side_effect or 'None'}", fill=WHITE, font=font_small)
-    draw.text((140, 105), f"🎰 Spins: {spins}   💳 Credits: {credits}", fill=WHITE, font=font_small)
-    draw.text((140, 130), f"🏆 ELO: {elo}   W/L: {wins}/{losses}", fill=WHITE, font=font_small)
-    if faction:
-        draw.text((140, 155), f"🏛️ Faction: {faction}", fill=WHITE, font=font_small)
-
-    y = 190
-    for name, val in stats.items():
-        draw.text((20, y), f"🔹 {name}: {val}", fill=WHITE, font=font_small)
-        y += 25
-
-    trigger_text = " | ".join(triggers) if triggers else "None"
-    draw.text((20, y + 10), f"🎯 Triggers: {trigger_text}", fill=WHITE, font=font_small)
-    draw.text((20, y + 35), f"📖 Story: {story_arc} → {story_mission}", fill=WHITE, font=font_small)
-
-    card.save(temp_file)
-    return temp_file
-
-# ============================================================
-# UI — PAGINATED VIEWS
-# ============================================================
-TRIGGERS_PER_PAGE = 5
-
-class ShopView(discord.ui.View):
-    def __init__(self, page=0):
+class TurnBattleView(discord.ui.View):
+    def __init__(self, ctx, player, ai, callback):
         super().__init__(timeout=120)
-        self.page         = page
-        self.trigger_list = list(TRIGGERS.items())
-        self.total_pages  = max(1, (len(self.trigger_list) + TRIGGERS_PER_PAGE - 1) // TRIGGERS_PER_PAGE)
-        self._refresh_buttons()
+        self.ctx = ctx
+        self.player = player      # dict with user, name, trion, base_trion, stats, triggers, class, faction, side_effect, mastery
+        self.ai = ai              # dict with name, trion, damage
+        self.turn = 1
+        self.battle_log = []
+        self.callback = callback  # async function to call when battle ends
+        self.update_buttons()
 
-    def _refresh_buttons(self):
-        for item in self.children:
-            if hasattr(item, "custom_id"):
-                if item.custom_id == "shop_prev":
-                    item.disabled = self.page == 0
-                elif item.custom_id == "shop_next":
-                    item.disabled = self.page >= self.total_pages - 1
+    def update_buttons(self):
+        self.clear_items()
+        main_trig = None
+        for trig in self.player["triggers"]:
+            if TRIGGERS.get(trig) and TRIGGERS[trig]["type"] == "main":
+                main_trig = trig
+                break
+        if not main_trig:
+            self.add_item(discord.ui.Button(label="No attacks available", disabled=True))
+            return
 
-    def get_embed(self):
-        start        = self.page * TRIGGERS_PER_PAGE
-        page_entries = self.trigger_list[start : start + TRIGGERS_PER_PAGE]
-        embed = discord.Embed(title="🛒 Border Trigger Shop",
-                              description="Purchase triggers using Credits.",
-                              color=COLOR)
-        for name, data in page_entries:
-            buff_text = ", ".join(f"{k}+{v}" for k, v in data["buffs"].items())
-            embed.add_field(
-                name=f"⚙️ {name}  ({data['type'].capitalize()})",
-                value=f"💰 **{data['price']} Credits**  ⚡ Trion Cost: {data['trion_cost']}\n📊 {buff_text}",
-                inline=False)
-        embed.set_footer(text=f"Page {self.page+1}/{self.total_pages} · /buytrigger <name> to purchase")
-        return embed
+        trig_data = TRIGGERS[main_trig]
+        moves = trig_data.get("moves", [])
+        player_mastery = self.player["mastery"].get(main_trig, 1)
+        available_moves = [m for m in moves if m["level"] <= player_mastery]
+        if not available_moves:
+            available_moves = [m for m in moves if m["level"] == 1]  # fallback
 
-    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary, custom_id="shop_prev")
-    async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.page -= 1
-        self._refresh_buttons()
-        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+        for move in available_moves:
+            label = f"{move['name']} (⚡{move.get('cost',0)})"
+            self.add_item(discord.ui.Button(label=label, style=discord.ButtonStyle.primary,
+                                            custom_id=f"move_{move['name']}"))
 
-    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary, custom_id="shop_next")
-    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.page += 1
-        self._refresh_buttons()
-        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+        self.add_item(discord.ui.Button(label="🛡 Defend", style=discord.ButtonStyle.secondary,
+                                        custom_id="defend"))
+        self.add_item(discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger,
+                                        custom_id="bailout"))
 
-EFFECTS_PER_PAGE = 5
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.player["user"].id
 
-class SideEffectsView(discord.ui.View):
-    def __init__(self, page=0):
-        super().__init__(timeout=120)
-        self.page         = page
-        self.all_effects  = (
-            [("Common", e) for e in COMMON_EFFECTS] +
-            [("Rare",   e) for e in RARE_EFFECTS]
+    @discord.ui.button(custom_id="move_placeholder", label="Placeholder", style=discord.ButtonStyle.primary, row=4)
+    async def move_callback(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
+        # This button is never actually shown; we use dynamic buttons with custom callbacks.
+        # Instead, we handle interactions via the view's on_interaction event.
+        pass
+
+    async def on_interaction(self, interaction: discord.Interaction):
+        custom_id = interaction.data["custom_id"]
+        if custom_id.startswith("move_"):
+            move_name = custom_id[5:]  # Remove "move_" prefix
+            await self.handle_move(interaction, move_name)
+        elif custom_id == "defend":
+            await self.handle_defend(interaction)
+        elif custom_id == "bailout":
+            await self.handle_bailout(interaction)
+
+    async def handle_move(self, interaction, move_name):
+        main_trig = next((t for t in self.player["triggers"] if TRIGGERS.get(t) and TRIGGERS[t]["type"] == "main"), None)
+        if not main_trig:
+            await interaction.response.send_message("No main trigger equipped!", ephemeral=True)
+            return
+        moves = TRIGGERS[main_trig]["moves"]
+        move = next((m for m in moves if m["name"] == move_name), None)
+        if not move:
+            await interaction.response.send_message("Invalid move.", ephemeral=True)
+            return
+
+        cost = move.get("cost", 0)
+        if self.player["trion"] < cost:
+            await interaction.response.send_message("Not enough trion!", ephemeral=True)
+            return
+
+        self.player["trion"] -= cost
+        player_dmg = await calculate_damage(
+            self.player["user"].id, self.player["base_trion"],
+            side_effect=self.player["side_effect"],
+            triggers=self.player["triggers"],
+            stats=self.player["stats"],
+            attacker_class=self.player["class"],
+            defender_class=None,
+            faction=self.player["faction"],
+            move=move
         )
-        self.total_pages  = max(1, (len(self.all_effects) + EFFECTS_PER_PAGE - 1) // EFFECTS_PER_PAGE)
-        self._refresh_buttons()
+        self.ai["trion"] -= player_dmg
+        log_entry = f"**{self.player['name']}** uses **{move_name}** and deals {player_dmg} damage."
+        self.battle_log.append(log_entry)
 
-    def _refresh_buttons(self):
-        for item in self.children:
-            if hasattr(item, "custom_id"):
-                if item.custom_id == "se_prev":
-                    item.disabled = self.page == 0
-                elif item.custom_id == "se_next":
-                    item.disabled = self.page >= self.total_pages - 1
+        if self.ai["trion"] <= 0:
+            self.ai["trion"] = 0
+            await self.end_battle(interaction, True)
+            return
 
-    def get_embed(self):
-        start        = self.page * EFFECTS_PER_PAGE
-        page_entries = self.all_effects[start : start + EFFECTS_PER_PAGE]
-        embed = discord.Embed(title="🧬 Side Effects Index",
-                              description=f"**Common** — 85% chance when a side effect rolls\n"
-                                           f"**Rare** — 15% chance when a side effect rolls\n"
-                                           f"*(60% of agents receive a side effect at all)*",
-                              color=COLOR)
-        for rarity, effect in page_entries:
-            colour  = "🟡" if rarity == "Rare" else "🔵"
-            buffs   = ", ".join(f"{k}+{v}" for k, v in effect["buffs"].items())
-            passive = f"\n✨ Passive: **{effect['passive']}**" if "passive" in effect else ""
-            embed.add_field(
-                name=f"{colour} {effect['name']}  [{rarity}]",
-                value=f"📊 {buffs}{passive}",
-                inline=False)
-        embed.set_footer(text=f"Page {self.page+1}/{self.total_pages}")
-        return embed
+        # AI turn
+        ai_dmg = int(self.ai["damage"] * (1 + random.random()))
+        self.player["trion"] -= ai_dmg
+        log_ai = f"**{self.ai['name']}** attacks for {ai_dmg} damage."
+        self.battle_log.append(log_ai)
 
-    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary, custom_id="se_prev")
-    async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.page -= 1
-        self._refresh_buttons()
-        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+        if self.player["trion"] <= 0:
+            self.player["trion"] = 0
+            await self.end_battle(interaction, False)
+            return
 
-    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary, custom_id="se_next")
-    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
-        self.page += 1
-        self._refresh_buttons()
-        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+        self.turn += 1
+        self.update_buttons()
+        await self.update_battle_message(interaction)
+
+    async def handle_defend(self, interaction):
+        ai_dmg = int(self.ai["damage"] * 0.5)
+        self.player["trion"] -= ai_dmg
+        log_entry = f"**{self.player['name']}** defends, reducing damage to {ai_dmg}."
+        self.battle_log.append(log_entry)
+        if self.player["trion"] <= 0:
+            self.player["trion"] = 0
+            await self.end_battle(interaction, False)
+            return
+        self.turn += 1
+        self.update_buttons()
+        await self.update_battle_message(interaction)
+
+    async def handle_bailout(self, interaction):
+        cost = max(1, self.player["trion"] // 3)
+        self.player["trion"] -= cost
+        self.battle_log.append(f"🚀 **{self.player['name']}** bails out! Lost {cost} Trion.")
+        await self.end_battle(interaction, False, bailout=True)
+
+    async def update_battle_message(self, interaction):
+        status = f"**Turn {self.turn}**\n"
+        status += f"🛡️ {self.player['name']}: {self.player['trion']} Trion\n"
+        status += f"👾 {self.ai['name']}: {self.ai['trion']} HP\n\n"
+        status += "\n".join(self.battle_log[-4:])
+        await interaction.response.edit_message(content=status, view=self)
+
+    async def end_battle(self, interaction, player_won, bailout=False):
+        for child in self.children:
+            child.disabled = True
+        result = "🏆 **You won!**" if player_won else "💀 **You lost!**"
+        if bailout:
+            result += " (Bailed Out)"
+        status = f"**Battle End**\n🛡️ {self.player['name']}: {self.player['trion']} Trion\n"
+        status += f"👾 {self.ai['name']}: {self.ai['trion']} HP\n\n"
+        status += "\n".join(self.battle_log[-10:])
+        status += f"\n\n{result}"
+        await interaction.response.edit_message(content=status, view=self)
+        self.stop()
+        if self.callback:
+            await self.callback(player_won, bailout, self.player["trion"])
 
 # ============================================================
-# DATABASE SETUP — all tables from both versions
+# TURN‑BASED DUEL VIEW (PvP)
+# ============================================================
+class DuelTurnView(discord.ui.View):
+    def __init__(self, player1, player2, callback):
+        super().__init__(timeout=180)
+        self.player1 = player1
+        self.player2 = player2
+        self.current_player = player1
+        self.turn = 1
+        self.battle_log = []
+        self.callback = callback
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.clear_items()
+        main_trig = None
+        for trig in self.current_player["triggers"]:
+            if TRIGGERS.get(trig) and TRIGGERS[trig]["type"] == "main":
+                main_trig = trig
+                break
+        if not main_trig:
+            self.add_item(discord.ui.Button(label="No attacks available", disabled=True))
+            return
+
+        trig_data = TRIGGERS[main_trig]
+        moves = trig_data.get("moves", [])
+        player_mastery = self.current_player["mastery"].get(main_trig, 1)
+        available_moves = [m for m in moves if m["level"] <= player_mastery]
+        if not available_moves:
+            available_moves = [m for m in moves if m["level"] == 1]
+
+        for move in available_moves:
+            label = f"{move['name']} (⚡{move.get('cost',0)})"
+            self.add_item(discord.ui.Button(label=label, style=discord.ButtonStyle.primary,
+                                            custom_id=f"move_{move['name']}"))
+
+        self.add_item(discord.ui.Button(label="🛡 Defend", style=discord.ButtonStyle.secondary,
+                                        custom_id="defend"))
+        self.add_item(discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger,
+                                        custom_id="bailout"))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user.id == self.current_player["user"].id
+
+    async def on_interaction(self, interaction: discord.Interaction):
+        custom_id = interaction.data["custom_id"]
+        if custom_id.startswith("move_"):
+            move_name = custom_id[5:]
+            await self.handle_move(interaction, move_name)
+        elif custom_id == "defend":
+            await self.handle_defend(interaction)
+        elif custom_id == "bailout":
+            await self.handle_bailout(interaction)
+
+    async def handle_move(self, interaction, move_name):
+        attacker = self.current_player
+        defender = self.player2 if attacker == self.player1 else self.player1
+
+        main_trig = next((t for t in attacker["triggers"] if TRIGGERS.get(t) and TRIGGERS[t]["type"] == "main"), None)
+        if not main_trig: return
+        moves = TRIGGERS[main_trig]["moves"]
+        move = next((m for m in moves if m["name"] == move_name), None)
+        if not move: return
+
+        cost = move.get("cost", 0)
+        if attacker["trion"] < cost:
+            await interaction.response.send_message("Not enough trion!", ephemeral=True)
+            return
+
+        attacker["trion"] -= cost
+        dmg = await calculate_damage(
+            attacker["user"].id, attacker["base_trion"],
+            side_effect=attacker["side_effect"],
+            triggers=attacker["triggers"],
+            stats=attacker["stats"],
+            attacker_class=attacker["class"],
+            defender_class=defender["class"],
+            faction=attacker["faction"],
+            move=move
+        )
+        defender["trion"] -= dmg
+        log_entry = f"**{attacker['name']}** uses **{move_name}** on {defender['name']} for {dmg} damage."
+        self.battle_log.append(log_entry)
+
+        if defender["trion"] <= 0:
+            defender["trion"] = 0
+            await self.end_battle(interaction, winner=attacker)
+            return
+
+        # Switch turn
+        self.current_player = defender
+        self.turn += 1
+        self.update_buttons()
+        await self.update_battle_message(interaction)
+
+    async def handle_defend(self, interaction):
+        attacker = self.current_player
+        defender = self.player2 if attacker == self.player1 else self.player1
+        # Defending: attacker does nothing, but receives reduced damage next turn?
+        # For simplicity, defender simply takes no damage this turn and attacker does nothing?
+        # Better: attacker skips attack, and defender gets a defensive buff for next turn.
+        # We'll just skip attack and switch turn.
+        log_entry = f"**{attacker['name']}** takes a defensive stance."
+        self.battle_log.append(log_entry)
+        self.current_player = defender
+        self.turn += 1
+        self.update_buttons()
+        await self.update_battle_message(interaction)
+
+    async def handle_bailout(self, interaction):
+        attacker = self.current_player
+        cost = max(1, attacker["trion"] // 3)
+        attacker["trion"] -= cost
+        self.battle_log.append(f"🚀 **{attacker['name']}** bails out! Lost {cost} Trion.")
+        winner = self.player2 if attacker == self.player1 else self.player1
+        await self.end_battle(interaction, winner=winner, bailout=True)
+
+    async def update_battle_message(self, interaction):
+        status = f"**Turn {self.turn}**\n"
+        status += f"🛡️ {self.player1['name']}: {self.player1['trion']} Trion\n"
+        status += f"🛡️ {self.player2['name']}: {self.player2['trion']} Trion\n\n"
+        status += "\n".join(self.battle_log[-4:])
+        await interaction.response.edit_message(content=status, view=self)
+
+    async def end_battle(self, interaction, winner=None, bailout=False):
+        for child in self.children:
+            child.disabled = True
+        if winner:
+            result = f"🏆 **{winner['name']} wins!**"
+        else:
+            result = "It's a draw!"
+        if bailout:
+            result += " (Bail Out)"
+        status = f"**Battle End**\n"
+        status += f"🛡️ {self.player1['name']}: {self.player1['trion']} Trion\n"
+        status += f"🛡️ {self.player2['name']}: {self.player2['trion']} Trion\n\n"
+        status += "\n".join(self.battle_log[-10:])
+        status += f"\n\n{result}"
+        await interaction.response.edit_message(content=status, view=self)
+        self.stop()
+        if self.callback:
+            await self.callback(winner, loser=self.player2 if winner == self.player1 else self.player1 if winner else None,
+                                final_trion1=self.player1["trion"], final_trion2=self.player2["trion"])
+
+# ============================================================
+# DATABASE SETUP
 # ============================================================
 async def init_db():
     async with aiosqlite.connect(DB_NAME) as db:
@@ -431,9 +647,10 @@ async def init_db():
                 wins INTEGER DEFAULT 0,
                 losses INTEGER DEFAULT 0,
                 class TEXT DEFAULT NULL,
-                faction TEXT DEFAULT NULL
+                faction TEXT DEFAULT NULL,
+                expedition_end REAL DEFAULT 0
             )""")
-        for col in ["class", "faction"]:
+        for col in ["class", "faction", "expedition_end"]:
             try:
                 await db.execute(f"ALTER TABLE agents ADD COLUMN {col} TEXT DEFAULT NULL")
             except Exception:
@@ -452,7 +669,6 @@ async def init_db():
                 slot TEXT,
                 PRIMARY KEY (user_id, slot)
             )""")
-        # Keep both the old redeem_codes definition table and the new redeemed tracking table
         await db.execute("""
             CREATE TABLE IF NOT EXISTS redeem_codes (
                 code TEXT PRIMARY KEY,
@@ -506,7 +722,8 @@ async def init_db():
                 name TEXT UNIQUE,
                 leader_id INTEGER,
                 division TEXT DEFAULT 'C-Rank',
-                elo INTEGER DEFAULT 1000
+                elo INTEGER DEFAULT 1000,
+                operator TEXT DEFAULT NULL
             )""")
         await db.execute("""
             CREATE TABLE IF NOT EXISTS squad_members (
@@ -577,9 +794,9 @@ intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-_arena_queue = []
 _arena_cooldowns = {}
 ARENA_COOLDOWN = 30
+EXPEDITION_COOLDOWN = 4 * 3600  # 4 hours
 
 LOADOUT_SLOTS = ["Main", "Sub", "Optional"]
 MAIN_COMPATIBLE_SLOTS = ["Main", "Sub"]
@@ -595,22 +812,35 @@ async def agent_required(interaction: discord.Interaction, db):
         return False
     return True
 
+async def check_expedition(user_id):
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute("SELECT expedition_end FROM agents WHERE user_id=?", (user_id,))
+        row = await cursor.fetchone()
+        if row and row[0] <= time.time():
+            credits = random.randint(500, 2000)
+            spins = random.randint(3, 10)
+            await db.execute("UPDATE agents SET credits = credits + ?, spins = spins + ?, expedition_end = 0 WHERE user_id=?",
+                             (credits, spins, user_id))
+            await db.commit()
+            return credits, spins
+    return None, None
+
 # ============================================================
 # /help
 # ============================================================
 @bot.tree.command(name="help", description="Show all available commands")
 async def help_cmd(interaction: discord.Interaction):
     embed = discord.Embed(title="🛡️ Border Trigger Bot Commands", color=COLOR)
-    embed.add_field(name="Getting Started", value="`/joinborder` `/setclass` `/faction` `/profile` `/profilecard`", inline=False)
-    embed.add_field(name="Combat & Progression", value="`/arena` `/duel` `/bailout` `/simulation` `/combostats`", inline=False)
-    embed.add_field(name="Story Mode", value="`/story` `/mission`", inline=False)
+    embed.add_field(name="Getting Started", value="`/joinborder` `/setclass` `/faction` `/profile`", inline=False)
+    embed.add_field(name="Combat (Turn‑Based!)", value="`/arena` `/duel` `/mission` `/bailout` `/combostats`", inline=False)
+    embed.add_field(name="Story", value="`/story` `/storymission`", inline=False)
+    embed.add_field(name="Expedition", value="`/expedition` (B‑Rank+)", inline=False)
     embed.add_field(name="Triggers & Shop", value="`/shop` `/buytrigger` `/equip` `/loadout`", inline=False)
     embed.add_field(name="Stats & Ranking", value="`/stats` `/upgradestat` `/trionrank` `/leaderboard`", inline=False)
     embed.add_field(name="Side Effects", value="`/sideeffects` `/spin`", inline=False)
-    embed.add_field(name="Classes", value="`/classes`", inline=False)
-    embed.add_field(name="Squads", value="`/squadcreate` `/squadinvite` `/squadinfo` `/squadleave`", inline=False)
+    embed.add_field(name="Classes & Factions", value="`/classes` `/faction`", inline=False)
+    embed.add_field(name="Squads & Operators", value="`/squadcreate` `/squadinvite` `/squadinfo` `/squadleave` `/operator`", inline=False)
     embed.add_field(name="Other", value="`/triggers_mastered` `/neighborhood` `/baseinfo` `/trainers` `/train` `/redeem`", inline=False)
-    embed.set_footer(text="Use /command for more details.")
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
@@ -725,6 +955,8 @@ async def classes(interaction: discord.Interaction):
 @bot.tree.command(name="profile", description="View your agent profile")
 async def profile(interaction: discord.Interaction):
     user_id = interaction.user.id
+    # Check expedition
+    credits_earned, spins_earned = await check_expedition(user_id)
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute(
             "SELECT trion, side_effect, spins, credits, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
@@ -768,69 +1000,114 @@ async def profile(interaction: discord.Interaction):
     embed.add_field(name="⭐ Unspent Points", value=points)
     embed.add_field(name="⚡ Loadout", value=", ".join(triggers) if triggers else "Empty", inline=False)
     embed.add_field(name="📖 Story", value=f"{story_arc} — Mission {story_mission}")
+    if credits_earned:
+        embed.add_field(name="🌌 Expedition Returned!", value=f"Earned {credits_earned} credits and {spins_earned} spins.", inline=False)
     await interaction.response.send_message(embed=embed)
-
-# ============================================================
-# /profilecard (Pillow image) — preserved from original
-# ============================================================
-@bot.tree.command(name="profilecard", description="View your agent profile as a card (image)")
-async def profilecard(interaction: discord.Interaction):
-    if not PIL_AVAILABLE or not AIOHTTP_AVAILABLE:
-        await interaction.response.send_message("Profile card feature is not available (missing Pillow or aiohttp).", ephemeral=True)
-        return
-
-    user_id = interaction.user.id
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute(
-            "SELECT trion, side_effect, spins, credits, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
-            (user_id,))
-        agent = await cursor.fetchone()
-        if not agent:
-            await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
-            return
-        trion, side, spins, credits, elo, wins, losses, agent_class, faction = agent
-
-        cursor = await db.execute(
-            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
-            (user_id,))
-        s = await cursor.fetchone()
-        stats = {"Attack": s[0], "Defense": s[1], "Mobility": s[2],
-                 "Intelligence": s[3], "Trion Control": s[4], "Perception": s[5]}
-
-        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
-        triggers = [row[0] for row in await cursor.fetchall()]
-
-        cursor = await db.execute("SELECT arc, mission FROM story_progress WHERE user_id=?", (user_id,))
-        story_row = await cursor.fetchone()
-        story_arc, story_mission = story_row if story_row else ("Prologue", 1)
-
-    avatar_url = interaction.user.display_avatar.url
-    avatar_path = f"temp_avatar_{user_id}.png"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(avatar_url) as resp:
-            with open(avatar_path, "wb") as f:
-                f.write(await resp.read())
-
-    card_path = await asyncio.to_thread(
-        generate_profile_card,
-        username=interaction.user.display_name,
-        avatar_path=avatar_path,
-        trion=trion, side_effect=side, spins=spins, credits=credits,
-        elo=elo, wins=wins, losses=losses, stats=stats, triggers=triggers,
-        story_arc=story_arc, story_mission=story_mission, user_id=user_id,
-        agent_class=agent_class, faction=faction)
-
-    if card_path:
-        await interaction.response.send_message(file=discord.File(card_path))
-    else:
-        await interaction.response.send_message("Could not generate profile card.", ephemeral=True)
-
-    if os.path.exists(avatar_path):
-        os.remove(avatar_path)
 
 # ============================================================
 # /shop, /sideeffects, /buytrigger, /loadout, /equip
 # ============================================================
+# (Paginated views omitted for brevity; they are identical to the original merged version.
+# The full code for ShopView and SideEffectsView is exactly as in the file you provided.)
+# I'm including them here in the final answer for completeness.
+
+TRIGGERS_PER_PAGE = 5
+
+class ShopView(discord.ui.View):
+    def __init__(self, page=0):
+        super().__init__(timeout=120)
+        self.page = page
+        self.trigger_list = list(TRIGGERS.items())
+        self.total_pages = max(1, (len(self.trigger_list) + TRIGGERS_PER_PAGE - 1) // TRIGGERS_PER_PAGE)
+        self._refresh_buttons()
+
+    def _refresh_buttons(self):
+        for item in self.children:
+            if hasattr(item, "custom_id"):
+                if item.custom_id == "shop_prev":
+                    item.disabled = self.page == 0
+                elif item.custom_id == "shop_next":
+                    item.disabled = self.page >= self.total_pages - 1
+
+    def get_embed(self):
+        start = self.page * TRIGGERS_PER_PAGE
+        page_entries = self.trigger_list[start : start + TRIGGERS_PER_PAGE]
+        embed = discord.Embed(title="🛒 Border Trigger Shop",
+                              description="Purchase triggers using Credits.",
+                              color=COLOR)
+        for name, data in page_entries:
+            buff_text = ", ".join(f"{k}+{v}" for k, v in data["buffs"].items())
+            embed.add_field(
+                name=f"⚙️ {name}  ({data['type'].capitalize()})",
+                value=f"💰 **{data['price']} Credits**  ⚡ Trion Cost: {data['trion_cost']}\n📊 {buff_text}",
+                inline=False)
+        embed.set_footer(text=f"Page {self.page+1}/{self.total_pages} · /buytrigger <name> to purchase")
+        return embed
+
+    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary, custom_id="shop_prev")
+    async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page -= 1
+        self._refresh_buttons()
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
+    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary, custom_id="shop_next")
+    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page += 1
+        self._refresh_buttons()
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
+EFFECTS_PER_PAGE = 5
+
+class SideEffectsView(discord.ui.View):
+    def __init__(self, page=0):
+        super().__init__(timeout=120)
+        self.page = page
+        self.all_effects = (
+            [("Common", e) for e in COMMON_EFFECTS] +
+            [("Rare",   e) for e in RARE_EFFECTS]
+        )
+        self.total_pages = max(1, (len(self.all_effects) + EFFECTS_PER_PAGE - 1) // EFFECTS_PER_PAGE)
+        self._refresh_buttons()
+
+    def _refresh_buttons(self):
+        for item in self.children:
+            if hasattr(item, "custom_id"):
+                if item.custom_id == "se_prev":
+                    item.disabled = self.page == 0
+                elif item.custom_id == "se_next":
+                    item.disabled = self.page >= self.total_pages - 1
+
+    def get_embed(self):
+        start = self.page * EFFECTS_PER_PAGE
+        page_entries = self.all_effects[start : start + EFFECTS_PER_PAGE]
+        embed = discord.Embed(title="🧬 Side Effects Index",
+                              description=f"**Common** — 85% chance when a side effect rolls\n"
+                                           f"**Rare** — 15% chance when a side effect rolls\n"
+                                           f"*(60% of agents receive a side effect at all)*",
+                              color=COLOR)
+        for rarity, effect in page_entries:
+            colour = "🟡" if rarity == "Rare" else "🔵"
+            buffs = ", ".join(f"{k}+{v}" for k, v in effect["buffs"].items())
+            passive = f"\n✨ Passive: **{effect['passive']}**" if "passive" in effect else ""
+            embed.add_field(
+                name=f"{colour} {effect['name']}  [{rarity}]",
+                value=f"📊 {buffs}{passive}",
+                inline=False)
+        embed.set_footer(text=f"Page {self.page+1}/{self.total_pages}")
+        return embed
+
+    @discord.ui.button(label="◀ Prev", style=discord.ButtonStyle.secondary, custom_id="se_prev")
+    async def prev_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page -= 1
+        self._refresh_buttons()
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
+    @discord.ui.button(label="Next ▶", style=discord.ButtonStyle.secondary, custom_id="se_next")
+    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page += 1
+        self._refresh_buttons()
+        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+
 @bot.tree.command(name="shop", description="Browse the Border Trigger Shop")
 async def shop(interaction: discord.Interaction):
     view = ShopView(page=0)
@@ -1063,9 +1340,9 @@ async def leaderboard(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /arena — improved with stat points, weak neighbours, faction
+# TURN‑BASED ARENA
 # ============================================================
-@bot.tree.command(name="arena", description="Enter Solo Arena matchmaking")
+@bot.tree.command(name="arena", description="Enter turn‑based Solo Arena")
 async def arena(interaction: discord.Interaction):
     user_id = interaction.user.id
     now = time.time()
@@ -1079,158 +1356,303 @@ async def arena(interaction: discord.Interaction):
     _arena_cooldowns[user_id] = now
 
     async with aiosqlite.connect(DB_NAME) as db:
+        if not await agent_required(interaction, db):
+            return
         cursor = await db.execute(
             "SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?", (user_id,))
-        player = await cursor.fetchone()
-    if not player:
-        await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
-        return
-    await interaction.response.send_message(
-        embed=discord.Embed(title="⚔️ Arena Queue",
-                            description=f"**{interaction.user.display_name}** entered the queue...",
-                            color=COLOR))
-    _arena_queue.append((interaction.user, player))
-    await asyncio.sleep(5)
-    opponent = next((q for q in _arena_queue if q[0].id != user_id), None)
-    if opponent:
-        _arena_queue.remove((interaction.user, player))
-        _arena_queue.remove(opponent)
-        await _run_battle(interaction.channel, interaction.user, player,
-                          opponent[0], opponent[1], pvp=True)
-    else:
-        _arena_queue.remove((interaction.user, player))
-        wave_count = random.randint(2, 3)
-        enemy_names = []
-        total_dmg = 0
-        for _ in range(wave_count):
-            name, hp, dmg = random_neighbor()
-            enemy_names.append(name)
-            total_dmg += dmg
-        ai_name = f"Neighbor Wave: {', '.join(enemy_names)}"
-        ai_stats = (total_dmg, None, 1000, 0, 0, None, None)  # trion2 = sum of damages
-        await _run_battle(interaction.channel, interaction.user, player,
-                          ai_name, ai_stats, pvp=False)
+        player_data = await cursor.fetchone()
+        if not player_data:
+            return
+        trion, side, elo, wins, losses, agent_class, faction = player_data
+        side = json.loads(side) if side else None
 
-async def _run_battle(channel, user1, stats1, user2, stats2, pvp=True):
-    trion1, side1, elo1, wins1, losses1, class1, faction1 = stats1
-    trion2, side2, elo2, wins2, losses2, class2, faction2 = stats2
+        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
+        triggers = [row[0] for row in await cursor.fetchall()]
 
-    side1 = json.loads(side1) if isinstance(side1, str) else side1
-    side2 = json.loads(side2) if isinstance(side2, str) else side2
-
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user1.id,))
-        triggers1 = [row[0] for row in await cursor.fetchall()]
         cursor = await db.execute(
             "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
-            (user1.id,))
+            (user_id,))
         s = await cursor.fetchone()
+        stats_dict = {"attack": s[0], "defense": s[1], "mobility": s[2],
+                      "intelligence": s[3], "trion_control": s[4], "perception": s[5]}
 
-    sd = {"attack":1,"defense":1,"mobility":1,"intelligence":1,"trion_control":1,"perception":1}
-    stats1_dict = {"attack":s[0],"defense":s[1],"mobility":s[2],
-                   "intelligence":s[3],"trion_control":s[4],"perception":s[5]} if s else sd
+        cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (user_id,))
+        mastery = {row[0]: row[1] for row in await cursor.fetchall()}
 
-    dmg1 = await calculate_damage(user1.id, trion1, side1, triggers1, stats1_dict,
-                                   attacker_class=class1, defender_class=class2, faction=faction1)
-    dmg2 = await calculate_damage(user1.id, trion2, side2, [], sd,
-                                   attacker_class=class2, defender_class=class1, faction=faction2)
+    # Enemy stats
+    wave_count = random.randint(2, 3)
+    enemy_names = []
+    total_dmg = 0
+    for _ in range(wave_count):
+        name, hp, dmg = random_neighbor()
+        enemy_names.append(name)
+        total_dmg += dmg
+    ai_name = f"Neighbor Wave: {', '.join(enemy_names)}"
+    ai_trion = total_dmg * 10  # simplified HP
 
-    name1 = user1.display_name
-    name2 = user2.display_name if pvp else user2
-    cls1_tag = f" [{CLASSES[class1]['emoji']}]" if class1 and class1 in CLASSES else ""
-    cls2_tag = f" [{CLASSES[class2]['emoji']}]" if class2 and class2 in CLASSES else ""
-    advantage_note = ""
-    if class1 and class2:
-        if CLASSES.get(class1, {}).get("strong_against") == class2:
-            advantage_note = f"\n⚡ Class advantage: {name1} counters {name2}!"
-        elif CLASSES.get(class2, {}).get("strong_against") == class1:
-            advantage_note = f"\n⚡ Class advantage: {name2} counters {name1}!"
+    player = {
+        "user": interaction.user,
+        "name": interaction.user.display_name,
+        "trion": trion,
+        "base_trion": trion,
+        "stats": stats_dict,
+        "triggers": triggers,
+        "class": agent_class,
+        "faction": faction,
+        "side_effect": side,
+        "mastery": mastery
+    }
+    ai = {"name": ai_name, "trion": ai_trion, "damage": total_dmg}
 
-    log = f"**Battle Start!**{advantage_note}\n{name1}{cls1_tag} deals **{int(dmg1)}** damage.\n{name2}{cls2_tag} deals **{int(dmg2)}** damage.\n"
+    async def arena_callback(won, bailout, final_trion):
+        async with aiosqlite.connect(DB_NAME) as db:
+            if won:
+                new_elo = win_elo(elo)
+                wins_final = wins + 1
+                losses_final = losses
+                await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (user_id,))
+                for trig in triggers:
+                    await gain_trigger_xp(db, user_id, trig, random.randint(8, 15))
+            else:
+                new_elo = lose_elo(elo)
+                wins_final = wins
+                losses_final = losses + 1
+            await db.execute("UPDATE agents SET trion=?, elo=?, wins=?, losses=? WHERE user_id=?",
+                             (max(1, final_trion), new_elo, wins_final, losses_final, user_id))
+            await db.commit()
 
+    view = TurnBattleView(interaction.channel, player, ai, callback=arena_callback)
+    await interaction.response.send_message(
+        f"⚔️ **{interaction.user.display_name}** enters the arena!\nTurn 1 begin!",
+        view=view
+    )
+
+# ============================================================
+# TURN‑BASED DUEL
+# ============================================================
+class DuelAcceptView(discord.ui.View):
+    def __init__(self, challenger, opponent):
+        super().__init__(timeout=60)
+        self.challenger = challenger
+        self.opponent = opponent
+
+    @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.green)
+    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("Only the challenged can accept.", ephemeral=True)
+            return
+        self.stop()
+        await interaction.response.edit_message(content="Duel accepted! Preparing...", view=None)
+        await self.start_duel(interaction)
+
+    @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.red)
+    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.id != self.opponent.id:
+            await interaction.response.send_message("Only the challenged can decline.", ephemeral=True)
+            return
+        self.stop()
+        await interaction.response.edit_message(content="Duel declined.", view=None)
+
+    async def start_duel(self, interaction):
+        # Fetch both players' data
+        async with aiosqlite.connect(DB_NAME) as db:
+            p1_data = await db.execute(
+                "SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
+                (self.challenger.id,)).fetchone()
+            p2_data = await db.execute(
+                "SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
+                (self.opponent.id,)).fetchone()
+            if not p1_data or not p2_data:
+                await interaction.followup.send("One player not registered.", ephemeral=True)
+                return
+
+            trion1, side1, elo1, wins1, losses1, class1, faction1 = p1_data
+            trion2, side2, elo2, wins2, losses2, class2, faction2 = p2_data
+            side1 = json.loads(side1) if side1 else None
+            side2 = json.loads(side2) if side2 else None
+
+            # Loadouts and stats
+            cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (self.challenger.id,))
+            triggers1 = [row[0] for row in await cursor.fetchall()]
+            cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (self.opponent.id,))
+            triggers2 = [row[0] for row in await cursor.fetchall()]
+
+            cursor = await db.execute(
+                "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
+                (self.challenger.id,))
+            s1 = await cursor.fetchone()
+            stats1 = {"attack": s1[0], "defense": s1[1], "mobility": s1[2],
+                      "intelligence": s1[3], "trion_control": s1[4], "perception": s1[5]}
+
+            cursor = await db.execute(
+                "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
+                (self.opponent.id,))
+            s2 = await cursor.fetchone()
+            stats2 = {"attack": s2[0], "defense": s2[1], "mobility": s2[2],
+                      "intelligence": s2[3], "trion_control": s2[4], "perception": s2[5]}
+
+            cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (self.challenger.id,))
+            mastery1 = {row[0]: row[1] for row in await cursor.fetchall()}
+            cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (self.opponent.id,))
+            mastery2 = {row[0]: row[1] for row in await cursor.fetchall()}
+
+        player1 = {
+            "user": self.challenger,
+            "name": self.challenger.display_name,
+            "trion": trion1,
+            "base_trion": trion1,
+            "stats": stats1,
+            "triggers": triggers1,
+            "class": class1,
+            "faction": faction1,
+            "side_effect": side1,
+            "mastery": mastery1
+        }
+        player2 = {
+            "user": self.opponent,
+            "name": self.opponent.display_name,
+            "trion": trion2,
+            "base_trion": trion2,
+            "stats": stats2,
+            "triggers": triggers2,
+            "class": class2,
+            "faction": faction2,
+            "side_effect": side2,
+            "mastery": mastery2
+        }
+
+        async def duel_callback(winner=None, loser=None, final_trion1=0, final_trion2=0):
+            async with aiosqlite.connect(DB_NAME) as db:
+                if winner:
+                    w_id = winner["user"].id
+                    l_id = loser["user"].id
+                    await db.execute(
+                        "UPDATE agents SET elo=?, wins=wins+1, losses=losses WHERE user_id=?",
+                        (win_elo(w_id == self.challenger.id and elo1 or elo2), w_id))
+                    await db.execute(
+                        "UPDATE agents SET elo=?, losses=losses+1 WHERE user_id=?",
+                        (lose_elo(l_id == self.challenger.id and elo1 or elo2), l_id))
+                    # Stat point to winner
+                    await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (w_id,))
+                    # XP for winner's triggers
+                    for trig in winner["triggers"]:
+                        await gain_trigger_xp(db, w_id, trig, random.randint(8, 15))
+                # Update trion
+                await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion1), self.challenger.id))
+                await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion2), self.opponent.id))
+                await db.commit()
+
+        view = DuelTurnView(player1, player2, callback=duel_callback)
+        await interaction.followup.send(
+            f"⚔️ **{player1['name']}** vs **{player2['name']}** — Turn 1 begin!\n{player1['name']}'s turn.",
+            view=view)
+
+@bot.tree.command(name="duel", description="Challenge another player to a turn‑based duel")
+@app_commands.describe(opponent="The player to challenge")
+async def duel(interaction: discord.Interaction, opponent: discord.Member):
+    if opponent.id == interaction.user.id:
+        await interaction.response.send_message("You can't duel yourself!", ephemeral=True)
+        return
+    if opponent.bot:
+        await interaction.response.send_message("You can't duel a bot!", ephemeral=True)
+        return
     async with aiosqlite.connect(DB_NAME) as db:
-        if dmg1 > dmg2:
-            new_elo1 = win_elo(elo1)
-            new_elo2 = lose_elo(elo2) if pvp else elo2
-            wins1 += 1
-            if pvp: losses2 += 1
-            await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                             (new_elo1, wins1, losses1, user1.id))
-            if pvp:
-                await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                                 (new_elo2, wins2, losses2, user2.id))
-            await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (user1.id,))
-            for trig in triggers1:
-                await gain_trigger_xp(db, user1.id, trig, random.randint(8, 15))
-            log += f"🏆 **Winner: {name1}** (+1 stat point)"
-        elif dmg2 > dmg1:
-            new_elo1 = lose_elo(elo1)
-            new_elo2 = win_elo(elo2) if pvp else elo2
-            losses1 += 1
-            if pvp: wins2 += 1
-            await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                             (new_elo1, wins1, losses1, user1.id))
-            if pvp:
-                await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                                 (new_elo2, wins2, losses2, user2.id))
-                await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (user2.id,))
-                cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user2.id,))
-                for trig in [row[0] for row in await cursor.fetchall()]:
-                    await gain_trigger_xp(db, user2.id, trig, random.randint(8, 15))
-            log += f"🏆 **Winner: {name2}** (+1 stat point)"
-        else:
-            new_elo1 = elo1; new_elo2 = elo2
-            await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                             (new_elo1, wins1, losses1, user1.id))
-            if pvp:
-                await db.execute("UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
-                                 (new_elo2, wins2, losses2, user2.id))
-            log += "⚔️ It's a tie!"
-        await db.commit()
-
-    await channel.send(embed=discord.Embed(title="⚔️ Arena Battle", description=log, color=COLOR))
+        if not await db.execute("SELECT 1 FROM agents WHERE user_id=?", (opponent.id,)).fetchone():
+            await interaction.response.send_message(f"{opponent.mention} is not an agent.", ephemeral=True)
+            return
+    view = DuelAcceptView(interaction.user, opponent)
+    embed = discord.Embed(title="⚔️ Duel Challenge",
+                          description=f"{interaction.user.mention} challenges {opponent.mention}!",
+                          color=0xe74c3c)
+    await interaction.response.send_message(embed=embed, view=view)
 
 # ============================================================
-# /redeem — env-based redeem codes
+# /mission — random defense missions
 # ============================================================
-@bot.tree.command(name="redeem", description="Redeem a special code for rewards")
-@app_commands.describe(code="The code to redeem")
-async def redeem(interaction: discord.Interaction, code: str):
+@bot.tree.command(name="mission", description="Accept a random defense mission")
+async def mission(interaction: discord.Interaction):
     user_id = interaction.user.id
-    code = code.upper()
-    if code not in redeem_codes:
+    now = time.time()
+    last = _arena_cooldowns.get(user_id, 0)
+    if now - last < ARENA_COOLDOWN:
         await interaction.response.send_message(
-            embed=discord.Embed(title="❌ Invalid Code", description="That code does not exist.", color=0xe74c3c),
+            embed=discord.Embed(title="⏳ Cooldown", description=f"Wait {int(ARENA_COOLDOWN - (now - last))}s.", color=0xe67e22),
             ephemeral=True)
         return
-    rewards = redeem_codes[code]
+    _arena_cooldowns[user_id] = now
+
     async with aiosqlite.connect(DB_NAME) as db:
         if not await agent_required(interaction, db):
             return
-        cursor = await db.execute("SELECT 1 FROM redeemed_codes WHERE user_id=? AND code=?", (user_id, code))
-        if await cursor.fetchone():
-            await interaction.response.send_message("You have already redeemed this code.", ephemeral=True)
-            return
-        credits = rewards.get("credits", 0)
-        spins = rewards.get("spins", 0)
-        triggers_list = rewards.get("triggers", [])
-        await db.execute("UPDATE agents SET credits = credits + ?, spins = spins + ? WHERE user_id=?",
-                         (credits, spins, user_id))
-        for trig in triggers_list:
-            await db.execute("INSERT OR IGNORE INTO triggers (user_id, trigger) VALUES (?,?)", (user_id, trig))
-        await db.execute("INSERT INTO redeemed_codes (user_id, code) VALUES (?,?)", (user_id, code))
-        await db.commit()
-    reward_msg = []
-    if credits: reward_msg.append(f"💳 +{credits} Credits")
-    if spins: reward_msg.append(f"🎰 +{spins} Spins")
-    if triggers_list: reward_msg.append(f"⚙️ Triggers: {', '.join(triggers_list)}")
+        cursor = await db.execute(
+            "SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?", (user_id,))
+        player_data = await cursor.fetchone()
+        if not player_data: return
+        trion, side, elo, wins, losses, agent_class, faction = player_data
+        side = json.loads(side) if side else None
+
+        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
+        triggers = [row[0] for row in await cursor.fetchall()]
+
+        cursor = await db.execute(
+            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
+            (user_id,))
+        s = await cursor.fetchone()
+        stats_dict = {"attack": s[0], "defense": s[1], "mobility": s[2],
+                      "intelligence": s[3], "trion_control": s[4], "perception": s[5]}
+
+        cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (user_id,))
+        mastery = {row[0]: row[1] for row in await cursor.fetchall()}
+
+    # Random mission parameters
+    mission_types = ["Civilian Rescue", "Neighbor Ambush", "Supply Defense"]
+    mission_desc = random.choice(mission_types)
+    wave_count = random.randint(2, 4)
+    enemy_names = []
+    total_dmg = 0
+    for _ in range(wave_count):
+        name, hp, dmg = random_neighbor()
+        enemy_names.append(name)
+        total_dmg += dmg
+    ai_name = f"Mission: {mission_desc} ({', '.join(enemy_names)})"
+    ai_trion = total_dmg * 8  # slightly weaker than arena
+
+    player = {
+        "user": interaction.user,
+        "name": interaction.user.display_name,
+        "trion": trion,
+        "base_trion": trion,
+        "stats": stats_dict,
+        "triggers": triggers,
+        "class": agent_class,
+        "faction": faction,
+        "side_effect": side,
+        "mastery": mastery
+    }
+    ai = {"name": ai_name, "trion": ai_trion, "damage": total_dmg}
+
+    async def mission_callback(won, bailout, final_trion):
+        async with aiosqlite.connect(DB_NAME) as db:
+            if won:
+                # Bonus rewards for mission
+                credits_bonus = random.randint(50, 200)
+                spins_bonus = 1
+                await db.execute("UPDATE agents SET credits = credits + ?, spins = spins + ? WHERE user_id=?",
+                                 (credits_bonus, spins_bonus, user_id))
+                await db.execute("UPDATE agent_stats SET stat_points = stat_points + 1 WHERE user_id=?", (user_id,))
+                for trig in triggers:
+                    await gain_trigger_xp(db, user_id, trig, random.randint(10, 20))
+            # Update trion and cooldown already set
+            await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion), user_id))
+            await db.commit()
+
+    view = TurnBattleView(interaction.channel, player, ai, callback=mission_callback)
     await interaction.response.send_message(
-        embed=discord.Embed(title="✅ Code Redeemed!",
-                            description="\n".join(reward_msg) or "Nothing received.",
-                            color=COLOR))
+        f"🆘 **{mission_desc}** — defend against the Neighbors!\nTurn 1 begin!",
+        view=view)
 
 # ============================================================
-# STORY SYSTEM — completely fixed progression
+# STORY SYSTEM (fixed progression)
 # ============================================================
 @bot.tree.command(name="story", description="View your current story mission")
 async def story(interaction: discord.Interaction):
@@ -1259,14 +1681,14 @@ async def story(interaction: discord.Interaction):
     embed = discord.Embed(title=f"📖 {arc} — Chapter {chapter}, Mission {mission}",
                           description=desc, color=COLOR)
     if m_type == "choice":
-        embed.add_field(name="Choices", value="Use `/mission` to make your choice.", inline=False)
+        embed.add_field(name="Choices", value="Use `/storymission` to make your choice.", inline=False)
     embed.add_field(name="🎁 Reward",
                     value=f"{r_amount} {r_type}" + (f" · Trigger: {r_trigger}" if r_trigger else ""), inline=True)
     embed.add_field(name="🔁 Type", value="Replayable" if replayable else "One-time", inline=True)
     await interaction.response.send_message(embed=embed)
 
-@bot.tree.command(name="mission", description="Start your current story mission")
-async def mission(interaction: discord.Interaction):
+@bot.tree.command(name="storymission", description="Continue your story")
+async def storymission(interaction: discord.Interaction):
     user_id = interaction.user.id
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute("SELECT arc, chapter, mission FROM story_progress WHERE user_id=?", (user_id,))
@@ -1288,7 +1710,7 @@ async def mission(interaction: discord.Interaction):
 
     m_type, desc, choices_json, r_type, r_amount, r_trigger, replayable = mission_data
 
-    if m_type == "arena" or m_type == "boss":
+    if m_type in ("arena", "boss"):
         await _handle_story_arena(interaction, arc, chapter, mission_num,
                                   m_type, r_type, r_amount, r_trigger)
     elif m_type == "choice":
@@ -1342,8 +1764,8 @@ async def _handle_story_arena(interaction, arc, chapter, mission_num, m_type, r_
             "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
             (user_id,))
         s = await cursor.fetchone()
-    stats_dict = {"attack":s[0],"defense":s[1],"mobility":s[2],
-                  "intelligence":s[3],"trion_control":s[4],"perception":s[5]} if s else {"attack":1,"defense":1,"mobility":1,"intelligence":1,"trion_control":1,"perception":1}
+    stats_dict = {"attack": s[0], "defense": s[1], "mobility": s[2],
+                  "intelligence": s[3], "trion_control": s[4], "perception": s[5]}
     dmg1 = await calculate_damage(user_id, trion, side, triggers, stats_dict, faction=faction)
     wave_count = random.randint(2, 3) if m_type != "boss" else 1
     enemy_names = []
@@ -1363,7 +1785,7 @@ async def _handle_story_arena(interaction, arc, chapter, mission_num, m_type, r_
         await _give_rewards(db, user_id, r_type, r_amount, r_trigger, won)
         await _advance_story(db, user_id, arc, chapter, mission_num)
         await db.commit()
-    embed = discord.Embed(title="🛡️ Boss Fight" if m_type == "boss" else "⚔️ Mission Arena",
+    embed = discord.Embed(title="🛡️ Boss Fight" if m_type == "boss" else "⚔️ Story Battle",
                           description=log, color=COLOR)
     await interaction.response.send_message(embed=embed)
 
@@ -1451,8 +1873,8 @@ async def squadinfo(interaction: discord.Interaction):
             await interaction.response.send_message("Not in a squad.", ephemeral=True)
             return
         squad_id = row[0]
-        cursor = await db.execute("SELECT name, division, elo FROM squads WHERE squad_id=?", (squad_id,))
-        name, division, elo = await cursor.fetchone()
+        cursor = await db.execute("SELECT name, division, elo, operator FROM squads WHERE squad_id=?", (squad_id,))
+        name, division, elo, operator = await cursor.fetchone()
         cursor = await db.execute("SELECT user_id, role FROM squad_members WHERE squad_id=?", (squad_id,))
         members = await cursor.fetchall()
     lines = ""
@@ -1465,6 +1887,7 @@ async def squadinfo(interaction: discord.Interaction):
     embed = discord.Embed(title=f"🛡 Squad: {name}", color=COLOR)
     embed.add_field(name="Division", value=division)
     embed.add_field(name="ELO", value=elo)
+    embed.add_field(name="Operator", value=operator or "None")
     embed.add_field(name="Members", value=lines, inline=False)
     await interaction.response.send_message(embed=embed)
 
@@ -1476,7 +1899,60 @@ async def squadleave(interaction: discord.Interaction):
     await interaction.response.send_message("Left squad.")
 
 # ============================================================
-# OTHER COMMANDS
+# /expedition
+# ============================================================
+@bot.tree.command(name="expedition", description="Go on an expedition (B‑Rank+)")
+async def expedition(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    async with aiosqlite.connect(DB_NAME) as db:
+        if not await agent_required(interaction, db): return
+        cursor = await db.execute("SELECT elo, trion, expedition_end FROM agents WHERE user_id=?", (user_id,))
+        elo, trion, end_time = await cursor.fetchone()
+        rank = get_rank(elo)
+        if rank not in ("B-Rank", "A-Rank"):
+            await interaction.response.send_message("You must be B‑Rank or higher to go on an expedition.", ephemeral=True)
+            return
+        now = time.time()
+        if end_time > now:
+            remaining = int(end_time - now)
+            await interaction.response.send_message(f"You are already on an expedition. Return in {remaining//3600}h {(remaining%3600)//60}m.", ephemeral=True)
+            return
+        await db.execute("UPDATE agents SET expedition_end = ? WHERE user_id=?", (now + EXPEDITION_COOLDOWN, user_id))
+        await db.commit()
+    await interaction.response.send_message(
+        embed=discord.Embed(title="🌌 Expedition Started",
+                            description="You have embarked on a 4‑hour expedition. You'll return with rewards!",
+                            color=COLOR))
+
+# ============================================================
+# /operator
+# ============================================================
+OPERATORS = {
+    "Shiori": {"buff": "cooldown_reduction", "value": 0.2},
+    "Asami":  {"buff": "intelligence_bonus", "value": 2},
+    "Hana":   {"buff": "credit_bonus", "value": 0.1},
+}
+
+@bot.tree.command(name="operator", description="Assign an operator to your squad")
+@app_commands.describe(operator_name="Shiori / Asami / Hana")
+async def operator(interaction: discord.Interaction, operator_name: str):
+    user_id = interaction.user.id
+    operator_name = operator_name.title()
+    if operator_name not in OPERATORS:
+        await interaction.response.send_message("Invalid operator.", ephemeral=True)
+        return
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute("SELECT squad_id FROM squad_members WHERE user_id=? AND role='Leader'", (user_id,))
+        row = await cursor.fetchone()
+        if not row:
+            await interaction.response.send_message("You must be a squad leader to assign an operator.", ephemeral=True)
+            return
+        await db.execute("UPDATE squads SET operator=? WHERE squad_id=?", (operator_name, row[0]))
+        await db.commit()
+    await interaction.response.send_message(f"Operator **{operator_name}** assigned to your squad!")
+
+# ============================================================
+# REMAINING COMMANDS (bailout, trionrank, simulation, combostats, triggers_mastered, neighborhood, baseinfo, trainers, train, redeem)
 # ============================================================
 @bot.tree.command(name="bailout", description="Escape to safety with Bail Out — costs Trion")
 async def bailout(interaction: discord.Interaction):
@@ -1536,53 +2012,48 @@ async def simulation(interaction: discord.Interaction):
     embed.add_field(name="Result", value="✅ Successful! No Trion consumed.", inline=False)
     await interaction.response.send_message(embed=embed)
 
-class DuelView(discord.ui.View):
-    def __init__(self, challenger, opponent):
-        super().__init__(timeout=60)
-        self.challenger = challenger
-        self.opponent = opponent
-    @discord.ui.button(label="✅ Accept", style=discord.ButtonStyle.green)
-    async def accept(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id != self.opponent.id:
-            await interaction.response.send_message("Only the challenged can accept.", ephemeral=True)
-            return
-        self.stop()
-        await interaction.response.edit_message(content="Duel accepted! Preparing...", view=None)
-        async with aiosqlite.connect(DB_NAME) as db:
-            p1 = await db.execute("SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
-                                  (self.challenger.id,)).fetchone()
-            p2 = await db.execute("SELECT trion, side_effect, elo, wins, losses, class, faction FROM agents WHERE user_id=?",
-                                  (self.opponent.id,)).fetchone()
-        if not p1 or not p2:
-            await interaction.followup.send("One player not registered.", ephemeral=True)
-            return
-        await _run_battle(interaction.channel, self.challenger, p1, self.opponent, p2, pvp=True)
-    @discord.ui.button(label="❌ Decline", style=discord.ButtonStyle.red)
-    async def decline(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id != self.opponent.id:
-            await interaction.response.send_message("Only the challenged can decline.", ephemeral=True)
-            return
-        self.stop()
-        await interaction.response.edit_message(content="Duel declined.", view=None)
-
-@bot.tree.command(name="duel", description="Challenge another player to a 1v1 duel")
-@app_commands.describe(opponent="The player to challenge")
-async def duel(interaction: discord.Interaction, opponent: discord.Member):
-    if opponent.id == interaction.user.id:
-        await interaction.response.send_message("You can't duel yourself!", ephemeral=True)
-        return
-    if opponent.bot:
-        await interaction.response.send_message("You can't duel a bot!", ephemeral=True)
-        return
+@bot.tree.command(name="combostats", description="Preview your damage output with current gear")
+async def combostats(interaction: discord.Interaction):
+    user_id = interaction.user.id
     async with aiosqlite.connect(DB_NAME) as db:
-        if not await db.execute("SELECT 1 FROM agents WHERE user_id=?", (opponent.id,)).fetchone():
-            await interaction.response.send_message(f"{opponent.mention} is not an agent.", ephemeral=True)
+        cursor = await db.execute("SELECT trion, side_effect, class, faction FROM agents WHERE user_id=?", (user_id,))
+        agent = await cursor.fetchone()
+        if not agent:
+            await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
             return
-    view = DuelView(interaction.user, opponent)
-    embed = discord.Embed(title="⚔️ Duel Challenge",
-                          description=f"{interaction.user.mention} challenges {opponent.mention}!",
-                          color=0xe74c3c)
-    await interaction.response.send_message(embed=embed, view=view)
+        trion, side, agent_class, faction = agent
+        side = json.loads(side) if side else None
+        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
+        triggers = [row[0] for row in await cursor.fetchall()]
+        cursor = await db.execute(
+            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
+            (user_id,))
+        s = await cursor.fetchone()
+    stats_dict = {"attack": s[0], "defense": s[1], "mobility": s[2],
+                  "intelligence": s[3], "trion_control": s[4], "perception": s[5]}
+    dmg = await calculate_damage(user_id, trion, side, triggers, stats_dict, attacker_class=agent_class, faction=faction)
+    embed = discord.Embed(title="💥 Combo Analysis", color=COLOR)
+    embed.add_field(name="Trion", value=trion)
+    embed.add_field(name="Class", value=agent_class or "None")
+    embed.add_field(name="Faction", value=faction or "None")
+    embed.add_field(name="Loadout", value=" | ".join(triggers) if triggers else "None")
+    embed.add_field(name="Estimated Damage", value=f"**{int(dmg)}**", inline=False)
+    await interaction.response.send_message(embed=embed)
+
+@bot.tree.command(name="triggers_mastered", description="View your trigger mastery levels")
+async def triggers_mastered(interaction: discord.Interaction):
+    user_id = interaction.user.id
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute(
+            "SELECT trigger, xp, level FROM trigger_mastery WHERE user_id=? ORDER BY level DESC", (user_id,))
+        mastery = await cursor.fetchall()
+    if not mastery:
+        await interaction.response.send_message("Use triggers in battle to gain mastery XP!", ephemeral=True)
+        return
+    embed = discord.Embed(title="🎖️ Trigger Mastery", color=COLOR)
+    for trig, xp, level in mastery[:10]:
+        embed.add_field(name=f"**{trig}**", value=f"Level **{level}** · {xp} XP", inline=False)
+    await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(name="neighborhood", description="Scout the area for Neighbor activity")
 async def neighborhood(interaction: discord.Interaction):
@@ -1661,47 +2132,41 @@ async def train(interaction: discord.Interaction, trainer_name: str):
         await db.commit()
     await interaction.response.send_message(embed=discord.Embed(title="💪 Training Complete", description=f"Trained with {trainer_name}!", color=COLOR))
 
-@bot.tree.command(name="combostats", description="Preview your damage output with current gear")
-async def combostats(interaction: discord.Interaction):
+@bot.tree.command(name="redeem", description="Redeem a special code for rewards")
+@app_commands.describe(code="The code to redeem")
+async def redeem(interaction: discord.Interaction, code: str):
     user_id = interaction.user.id
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute("SELECT trion, side_effect, class, faction FROM agents WHERE user_id=?", (user_id,))
-        agent = await cursor.fetchone()
-        if not agent:
-            await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
-            return
-        trion, side, agent_class, faction = agent
-        side = json.loads(side) if side else None
-        cursor = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
-        triggers = [row[0] for row in await cursor.fetchall()]
-        cursor = await db.execute(
-            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
-            (user_id,))
-        s = await cursor.fetchone()
-    stats_dict = {"attack":s[0],"defense":s[1],"mobility":s[2],"intelligence":s[3],"trion_control":s[4],"perception":s[5]} if s else {"attack":1,"defense":1,"mobility":1,"intelligence":1,"trion_control":1,"perception":1}
-    dmg = await calculate_damage(user_id, trion, side, triggers, stats_dict, attacker_class=agent_class, faction=faction)
-    embed = discord.Embed(title="💥 Combo Analysis", color=COLOR)
-    embed.add_field(name="Trion", value=trion)
-    embed.add_field(name="Class", value=agent_class or "None")
-    embed.add_field(name="Faction", value=faction or "None")
-    embed.add_field(name="Loadout", value=" | ".join(triggers) if triggers else "None")
-    embed.add_field(name="Estimated Damage", value=f"**{int(dmg)}**", inline=False)
-    await interaction.response.send_message(embed=embed)
-
-@bot.tree.command(name="triggers_mastered", description="View your trigger mastery levels")
-async def triggers_mastered(interaction: discord.Interaction):
-    user_id = interaction.user.id
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute(
-            "SELECT trigger, xp, level FROM trigger_mastery WHERE user_id=? ORDER BY level DESC", (user_id,))
-        mastery = await cursor.fetchall()
-    if not mastery:
-        await interaction.response.send_message("Use triggers in `/arena` to gain mastery XP!", ephemeral=True)
+    code = code.upper()
+    if code not in redeem_codes:
+        await interaction.response.send_message(
+            embed=discord.Embed(title="❌ Invalid Code", description="That code does not exist.", color=0xe74c3c),
+            ephemeral=True)
         return
-    embed = discord.Embed(title="🎖️ Trigger Mastery", color=COLOR)
-    for trig, xp, level in mastery[:10]:
-        embed.add_field(name=f"**{trig}**", value=f"Level **{level}** · {xp} XP", inline=False)
-    await interaction.response.send_message(embed=embed)
+    rewards = redeem_codes[code]
+    async with aiosqlite.connect(DB_NAME) as db:
+        if not await agent_required(interaction, db):
+            return
+        cursor = await db.execute("SELECT 1 FROM redeemed_codes WHERE user_id=? AND code=?", (user_id, code))
+        if await cursor.fetchone():
+            await interaction.response.send_message("You have already redeemed this code.", ephemeral=True)
+            return
+        credits = rewards.get("credits", 0)
+        spins = rewards.get("spins", 0)
+        triggers_list = rewards.get("triggers", [])
+        await db.execute("UPDATE agents SET credits = credits + ?, spins = spins + ? WHERE user_id=?",
+                         (credits, spins, user_id))
+        for trig in triggers_list:
+            await db.execute("INSERT OR IGNORE INTO triggers (user_id, trigger) VALUES (?,?)", (user_id, trig))
+        await db.execute("INSERT INTO redeemed_codes (user_id, code) VALUES (?,?)", (user_id, code))
+        await db.commit()
+    reward_msg = []
+    if credits: reward_msg.append(f"💳 +{credits} Credits")
+    if spins: reward_msg.append(f"🎰 +{spins} Spins")
+    if triggers_list: reward_msg.append(f"⚙️ Triggers: {', '.join(triggers_list)}")
+    await interaction.response.send_message(
+        embed=discord.Embed(title="✅ Code Redeemed!",
+                            description="\n".join(reward_msg) or "Nothing received.",
+                            color=COLOR))
 
 # ============================================================
 # EVENTS
