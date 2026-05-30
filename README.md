@@ -1,11 +1,11 @@
 # Trigger-Bot-2
 This is a new & improved Discord bot based of off the anime 'World Trigger'.
 
-(<img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />)  
+<img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />
 
 ## ✨ Features
 - Turn‑based tactical arena, duels and missions
-- 20+ World Trigger weapons with skill trees and fusions
+- 25+ World Trigger weapons with skill trees and fusions
 - Squad system with operators (Shiori, Asami, Hana)
 - Kido, Shinoda, Tamakoma factions with stat bonuses
 - Daily missions, story mode, expeditions, base defense
