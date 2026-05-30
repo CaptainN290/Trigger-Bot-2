@@ -3,7 +3,7 @@ This is a new & improved Discord bot based of off the anime 'World Trigger'.
 
 <img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />
 
-## ✨ Features
+## ❒ Features
 - Turn‑based tactical arena, duels and missions
 - 25+ World Trigger weapons with skill trees and fusions
 - Squad system with operators (Shiori, Asami, Hana)
@@ -13,7 +13,7 @@ This is a new & improved Discord bot based of off the anime 'World Trigger'.
 
 Use `/help` to see the full list in Discord.
 
-## 🕹️ How to Play
+## ❒ How to Play
 1. Start with `/joinborder` – you’ll get a Trion level and a side effect.
 2. Choose a class (`/setclass`) and a faction (`/faction`).
 3. Buy triggers from `/shop` and equip them with `/equip`.
@@ -22,5 +22,5 @@ Use `/help` to see the full list in Discord.
 6. Form a squad, assign an operator, and challenge other players in `/duel`.
 7. Climb the ranks from C‑Rank to A‑Rank.
 
-## 📜 License
+## ❒ License
 This bot’s source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!
