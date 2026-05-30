@@ -1,5 +1,6 @@
 # Trigger-Bot-2
 This is a new & improved Trigger Bot based off of the anime 'World Trigger'.
+__⚠️ This Discord bot is a HUGE work in progress! There's currently no database system in place, so any data you create won't be saved. Treat this as a playtest until the release candidate, as all data may be wiped at any time. ⚠️__
 
 <img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />
 
