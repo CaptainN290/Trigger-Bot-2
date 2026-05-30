@@ -3,6 +3,8 @@ This is a new & improved Discord bot based of off the anime 'World Trigger'.
 
 <img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />
 
+## ❒ [Invite link for Trigger Bot 2](https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot)
+
 ## ❒ Features
 - Turn‑based tactical arena, duels and missions
 - 25+ World Trigger weapons with skill trees and fusions
