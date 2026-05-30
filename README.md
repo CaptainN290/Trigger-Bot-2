@@ -1,5 +1,5 @@
 # Trigger-Bot-2
-This is a new & improved Discord bot based of off the anime 'World Trigger'.
+This is a new & improved Trigger Bot based off of the anime 'World Trigger'.
 
 <img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />
 
