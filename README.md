@@ -1,40 +1,26 @@
 # Trigger-Bot-2
 This is a new & improved Discord bot based of off the anime 'World Trigger'.
 
-Here are all the slash commands in Trigger Bot:
+(<img width="256" height="256" alt="WTB" src="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92" />)  
 
-## **Core Commands**
-- `/joinborder` — Become a Border agent (register)
-- `/setclass` — Choose your Border combat class (Attacker, Sniper, Gunner, Shooter, or All Rounder)
-- `/classes` — View all classes and their matchups
+## ✨ Features
+- Turn‑based tactical arena, duels and missions
+- 20+ World Trigger weapons with skill trees and fusions
+- Squad system with operators (Shiori, Asami, Hana)
+- Kido, Shinoda, Tamakoma factions with stat bonuses
+- Daily missions, story mode, expeditions, base defense
+- Trigger mastery, stat/skill progression, redeem codes
 
-## **Profile & Stats**
-- `/profile` — View your agent profile card
-- `/stats` — View your agent stats (Attack, Defense, Mobility, Intelligence, Trion Control, Perception)
-- `/upgradestat` — Spend a stat point to upgrade a specific stat
-- `/leaderboard` — View the top 10 agents by ELO
+Use `/help` to see the full list in Discord.
 
-## **Shop & Equipment**
-- `/shop` — Browse the Border Trigger Shop (paginated)
-- `/buytrigger` — Buy a trigger from the shop
-- `/loadout` — View your trigger loadout
-- `/equip` — Equip a trigger into a loadout slot (Main, Sub, or Optional)
-- `/sideeffects` — Browse all possible side effects (paginated)
+## 🕹️ How to Play
+1. Start with `/joinborder` – you’ll get a Trion level and a side effect.
+2. Choose a class (`/setclass`) and a faction (`/faction`).
+3. Buy triggers from `/shop` and equip them with `/equip`.
+4. Enter `/arena` or `/mission` to fight Neighbors, earn credits, stat points, and trigger XP.
+5. Level up your triggers and spend skill points to unlock new moves.
+6. Form a squad, assign an operator, and challenge other players in `/duel`.
+7. Climb the ranks from C‑Rank to A‑Rank.
 
-## **Gacha & Progression**
-- `/spin` — Spend a spin to reroll either Trion or Side Effect
-
-## **Combat**
-- `/arena` — Enter Solo Arena matchmaking (fights other players or AI Neighbors)
-
-## **Story Mode**
-- `/story` — View your current story mission
-- `/mission` — Start your current story mission
-
-## **Squad System**
-- `/squadcreate` — Create a squad
-- `/squadinvite` — Invite a player to your squad
-- `/squadinfo` — View your squad info
-- `/squadleave` — Leave your squad
-
-**Total: 21 commands**
+## 📜 License
+This bot’s source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!
