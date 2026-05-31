@@ -605,30 +605,30 @@ class TurnBattleView(discord.ui.View):
         return None, None
 
     def _build_buttons(self):
-    self.clear_items()
-    trig_name, trig_data = self._get_main_trigger()
-    if not trig_name or not trig_data:
-        self.add_item(discord.ui.Button(label="No Main Trigger equipped", disabled=True))
-        return
+        self.clear_items()
+        trig_name, trig_data = self._get_main_trigger()
+        if not trig_name or not trig_data:
+            self.add_item(discord.ui.Button(label="No Main Trigger equipped", disabled=True))
+            return
 
-    mastery     = self.player.get("mastery", {}).get(trig_name, 1)
-    moves       = trig_data.get("moves", [])
-    avail_moves = [m for m in moves if m["level"] <= mastery] or moves[:1]
+        mastery     = self.player.get("mastery", {}).get(trig_name, 1)
+        moves       = trig_data.get("moves", [])
+        avail_moves = [m for m in moves if m["level"] <= mastery] or moves[:1]
 
-    for move in avail_moves:
-        self.add_item(discord.ui.Button(
-            label="{} (⚡{})".format(move['name'], move.get('cost', 0)),
-            style=discord.ButtonStyle.primary,
-            custom_id="move_{}".format(move['name']),
-        ))
+        for move in avail_moves:
+            self.add_item(discord.ui.Button(
+                label="{} (⚡{})".format(move['name'], move.get('cost', 0)),
+                style=discord.ButtonStyle.primary,
+                custom_id="move_{}".format(move['name']),
+            ))
 
-    self.add_item(
-        discord.ui.Button(
-            label="🛡 Defend",
-            style=discord.ButtonStyle.secondary,
-            custom_id="defend"
+        self.add_item(
+            discord.ui.Button(
+                label="🛡 Defend",
+                style=discord.ButtonStyle.secondary,
+                custom_id="defend"
+            )
         )
-    )
 
         if self.squad_operator and self.operator_cooldown <= 0:
             self.add_item(discord.ui.Button(label="📡 Call Operator", style=discord.ButtonStyle.success, custom_id="operator"))
