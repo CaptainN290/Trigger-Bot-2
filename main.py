@@ -617,7 +617,7 @@ class TurnBattleView(discord.ui.View):
 
         for move in avail_moves:
             self.add_item(discord.ui.Button(
-                label     = f"{move[\'name\']} (⚡{move.get(\'cost\', 0)})",
+                label = f"{move[\"name\"]} (⚡{move.get(\"cost\", 0)})",
                 style     = discord.ButtonStyle.primary,
                 custom_id = f"move_{move[\'name\']}",
             ))
