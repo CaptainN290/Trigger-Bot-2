@@ -616,11 +616,11 @@ class TurnBattleView(discord.ui.View):
         avail_moves    = [m for m in moves if m["level"] <= mastery] or moves[:1]
 
         for move in avail_moves:
-            self.add_item(discord.ui.Button(
-                label = f"{move[\"name\"]} (⚡{move.get(\"cost\", 0)})",
-                style     = discord.ButtonStyle.primary,
-                custom_id = f"move_{move[\'name\']}",
-            ))
+    self.add_item(discord.ui.Button(
+        label     = f"{move['name']} (⚡{move.get('cost', 0)})",
+        style     = discord.ButtonStyle.primary,
+        custom_id = f"move_{move['name']}",
+    ))
 
         self.add_item(discord.ui.Button(label="🛡 Defend",  style=discord.ButtonStyle.secondary, custom_id="defend"))
 
