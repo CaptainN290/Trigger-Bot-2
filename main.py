@@ -49,14 +49,20 @@ FACTIONS = {
 # ============================================================
 CLASSES = {
     "Attacker":    {"emoji": "⚔️",  "strong_against": "Sniper",
+                   "image": "https://static.wikitide.net/worldtriggerwiki/b/b2/Tachikawa_deflecting_despinis.gif",
                    "description": "Close-combat specialist. Closes distance to overwhelm snipers."},
     "Sniper":      {"emoji": "🎯",  "strong_against": "Gunner",
+                   "image": "https://static.wikitide.net/worldtriggerwiki/a/a8/Toma_Egret.gif",
                    "description": "Long-range precision. Outranges and punishes gunner positioning."},
     "Gunner":      {"emoji": "🔫",  "strong_against": "Shooter",
+                   "image": "https://i.redd.it/eq7jxwbl1jwg1.gif",
                    "description": "Accurate suppressive fire. More reliable than unpredictable trajectories."},
     "Shooter":     {"emoji": "💥",  "strong_against": "All Rounder",
+                   "image": "https://static.wikia.nocookie.net/worldtrigger/images/6/6f/Izumi_Viper_anime.gif/revision/latest?cb=20160420224052",
                    "description": "Unpredictable trajectories that overwhelm balanced fighters."},
     "All Rounder": {"emoji": "🌟",  "strong_against": "Attacker",
+                   # Yuma Kuga is the ultimate All-Rounder. Used a Yuma gif as a placeholder!
+                   "image": "https://static.wikia.nocookie.net/worldtrigger/images/4/4f/Yuma_and_Replica_Episode_1.gif/revision/latest?cb=20150419233022",
                    "description": "Versatile and adaptive. Handles close-combat rushdown with ease."},
 }
 CLASS_ADVANTAGE_MULT = 1.3
@@ -1476,11 +1482,17 @@ async def setclass(interaction: discord.Interaction, class_name: str):
     async with aiosqlite.connect(DB_NAME) as db:
         await db.execute("UPDATE agents SET class=? WHERE user_id=?", (matched, interaction.user.id))
         await db.commit()
+        
     cls = CLASSES[matched]
     embed = discord.Embed(title=f"{cls['emoji']} Class Set: {matched}",
                           description=cls["description"], color=COLOR)
     embed.add_field(name="⚡ Strong Against", value=cls["strong_against"])
     embed.add_field(name="💥 Damage Bonus",   value=f"+{int((CLASS_ADVANTAGE_MULT-1)*100)}% vs {cls['strong_against']}")
+    
+    # Set the GIF/image
+    if "image" in cls:
+        embed.set_image(url=cls["image"])
+        
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
