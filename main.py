@@ -178,6 +178,35 @@ TRIGGERS = {
     "Shadow Cloak": {"price": 120, "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5},                "moves": []},
     "Wallbreaker":  {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 3},                 "moves": []},
 }
+    # ── Aftokrator Black Triggers (Earned via Story) ───────
+    "Organon": {
+        "price": 0, "trion_cost": 5, "type": "main", "black_trigger": True,
+        "buffs": {"attack": 15, "defense": 5, "mobility": 5},
+        "moves": [
+            {"name": "Organon Slash",  "dmg": 2.0, "cost": 0, "level": 1},
+            {"name": "Blade Storm",    "dmg": 2.5, "cost": 1, "level": 2},
+            {"name": "Dimensional Cut","dmg": 3.5, "cost": 3, "level": 5},
+        ],
+    },
+    "Vorvoros": {
+        "price": 0, "trion_cost": 5, "type": "main", "black_trigger": True,
+        "buffs": {"attack": 12, "defense": 10, "intelligence": 5},
+        "moves": [
+            {"name": "Liquid Form",     "dmg": 1.5, "cost": 0, "level": 1},
+            {"name": "Poison Splash",   "dmg": 2.2, "cost": 1, "level": 2},
+            {"name": "Toxic Devastation","dmg": 3.0, "cost": 3, "level": 5},
+        ],
+    },
+    "Alektor": {
+        "price": 0, "trion_cost": 6, "type": "main", "black_trigger": True,
+        "buffs": {"attack": 14, "mobility": 8, "perception": 5},
+        "moves": [
+            {"name": "Feather Shot",   "dmg": 1.8, "cost": 0, "level": 1},
+            {"name": "Homing Flock",   "dmg": 2.4, "cost": 1, "level": 2},
+            {"name": "Sky God's Wrath","dmg": 3.2, "cost": 3, "level": 5},
+        ],
+    },
+}
 
 # ============================================================
 # DATA — COMBINED TRIGGERS  (Trigger Forge)
@@ -377,7 +406,7 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
     if stats is None:
         stats = {k: 1 for k in ("attack", "defense", "mobility", "intelligence", "trion_control", "perception")}
 
-    base            = trion * 10
+    base            = trion * 3
     buff            = 0
     remaining_trion = trion
 
@@ -503,6 +532,8 @@ class ShopView(discord.ui.View):
                                 description="Purchase triggers using Credits.",
                                 color=COLOR)
         for name, data in entries:
+            if data.get("black_trigger"):  # <-- ADD THIS LINE
+                continue                   # <-- ADD THIS LINE
             is_combo = name != data.get("name", name) or any(c["name"] == name for c in COMBINED_TRIGGERS.values())
             suffix   = " **[FUSED]**" if is_combo else ""
             buffs    = ", ".join(f"{k}+{v}" for k, v in data["buffs"].items())
@@ -1172,6 +1203,16 @@ async def _populate_story(db):
         (3, 1, "boss",
          "The main Neighbor threat appears in Mikado City. Prepare for a boss battle!",
          None, "trigger", 1, "Grasshopper", 0),
+         # ─── CHAPTER 4: AFTOKRATOR INVASION ───
+        (4, 1, "boss",
+         "A massive Trion gate opens! Viza of Aftokrator appears, wielding the Black Trigger 'Organon'.",
+         None, "trigger", 1, "Organon", 0),
+        (4, 2, "boss",
+         "Enedora attacks with his Black Trigger 'Vorvoros', turning his body into toxic liquid!",
+         None, "trigger", 1, "Vorvoros", 0),
+        (4, 3, "boss",
+         "Hyrein, the commander, unleashes 'Alektor'. Defeat him to end the invasion!",
+         None, "trigger", 1, "Alektor", 0),
     ]
     for chapter, mission, m_type, desc, choices, r_type, r_amount, r_trigger, replayable in missions:
         await db.execute("""
@@ -2944,6 +2985,66 @@ async def ping(interaction: discord.Interaction):
     latency = round(bot.latency * 1000, 2)
     await interaction.response.send_message(
         embed=discord.Embed(title="🏓 Pong!", description=f"Latency: **{latency}ms**", color=COLOR))
+
+# ============================================================
+# /about
+# ============================================================
+@bot.tree.command(name="About", description="Description on Trigger Bot 2")
+import discord
+
+# Create the embed structure
+embed = discord.Embed(
+    title="Trigger Bot 2",
+    description=(
+        "**This is the new & improved Trigger Bot based off of the anime 'World Trigger'.**\n\n"
+        "⚠️ **This Discord bot is a HUGE work in progress!** There's currently no database system "
+        "in place, so any data you create won't be saved. Treat this as a playtest until the release "
+        "candidate, as all data may be wiped at any time. ⚠️"
+    ),
+    color=COLOR
+)
+
+# Add the main visual image asset
+embed.set_image(url="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92")
+
+# Construct the formatted sections
+embed.add_field(
+    name="🔗 Quick Access",
+    value="👉 **[Invite link for Trigger Bot 2](https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot)**",
+    inline=False
+)
+
+embed.add_field(
+    name="❒ Features",
+    value=(
+        "• Turn‑based tactical arena, duels and missions\n"
+        "• 25+ World Trigger weapons with skill trees and fusions\n"
+        "• Squad system with operators (Shiori, Asami, Hana)\n"
+        "• Kido, Shinoda, Tamakoma factions with stat bonuses\n"
+        "• Daily missions, story mode, expeditions, base defense\n"
+        "• Trigger mastery, stat/skill progression, redeem codes\n\n"
+        "*Use `/help` to see the full list in Discord.*"
+    ),
+    inline=False
+)
+
+embed.add_field(
+    name="❒ How to Play",
+    value=(
+        "1. Start with `/joinborder` – you’ll get a Trion level and a side effect.\n"
+        "2. Choose a class (`/setclass`) and a faction (`/faction`).\n"
+        "3. Buy triggers from `/shop` and equip them with `/equip`.\n"
+        "4. Enter `/arena` or `/mission` to fight Neighbors, earn credits, stat points, and trigger XP.\n"
+        "5. Level up your triggers and spend skill points to unlock new moves.\n"
+        "6. Form a squad, assign an operator, and challenge other players in `/duel`.\n"
+        "7. Climb the ranks from C‑Rank to A‑Rank."
+    ),
+    inline=False
+)
+
+embed.set_footer(
+    text="❒ License: This bot’s source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!"
+)
 
 # ============================================================
 # EVENTS
