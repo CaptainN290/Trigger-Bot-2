@@ -632,7 +632,7 @@ class TurnBattleView(discord.ui.View):
                 return trig, data
         return None, None
 
-    def _build_buttons(self):
+            def _build_buttons(self):
         self.clear_items()
         trig_name, trig_data = self._get_main_trigger()
         if not trig_name or not trig_data:
@@ -644,24 +644,37 @@ class TurnBattleView(discord.ui.View):
         avail_moves = [m for m in moves if m["level"] <= mastery] or moves[:1]
 
         for move in avail_moves:
-            self.add_item(discord.ui.Button(
+            btn = discord.ui.Button(
                 label="{} (⚡{})".format(move['name'], move.get('cost', 0)),
                 style=discord.ButtonStyle.primary,
                 custom_id="move_{}".format(move['name']),
-            ))
-
-        self.add_item(
-            discord.ui.Button(
-                label="🛡 Defend",
-                style=discord.ButtonStyle.secondary,
-                custom_id="defend"
             )
-        )
+            
+            # Explicitly assign the callback to handle dynamic buttons
+            async def move_callback(interaction: discord.Interaction, m_name=move['name']):
+                await self._handle_move(interaction, m_name)
+                
+            btn.callback = move_callback
+            self.add_item(btn)
+
+        btn = discord.ui.Button(label="🛡 Defend", style=discord.ButtonStyle.secondary, custom_id="defend")
+        async def defend_callback(interaction: discord.Interaction):
+            await self._handle_defend(interaction)
+        btn.callback = defend_callback
+        self.add_item(btn)
 
         if self.squad_operator and self.operator_cooldown <= 0:
-            self.add_item(discord.ui.Button(label="📡 Call Operator", style=discord.ButtonStyle.success, custom_id="operator"))
+            btn = discord.ui.Button(label="📡 Call Operator", style=discord.ButtonStyle.success, custom_id="operator")
+            async def op_callback(interaction: discord.Interaction):
+                await self._handle_operator(interaction)
+            btn.callback = op_callback
+            self.add_item(btn)
 
-        self.add_item(discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger, custom_id="bailout"))
+        btn = discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger, custom_id="bailout")
+        async def bail_callback(interaction: discord.Interaction):
+            await self._handle_bailout(interaction)
+        btn.callback = bail_callback
+        self.add_item(btn)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.player["user"].id
@@ -823,7 +836,7 @@ class DuelTurnView(discord.ui.View):
                 return trig, data
         return None, None
 
-    def _build_buttons(self):
+        def _build_buttons(self):
         self.clear_items()
         trig_name, trig_data = self._get_main_trigger(self.current)
         if not trig_name or not trig_data:
@@ -835,19 +848,38 @@ class DuelTurnView(discord.ui.View):
         avail_moves = [m for m in moves if m["level"] <= mastery] or moves[:1]
 
         for move in avail_moves:
-            self.add_item(discord.ui.Button(
+            btn = discord.ui.Button(
                 label     = f"{move['name']} (⚡{move.get('cost', 0)})",
                 style     = discord.ButtonStyle.primary,
                 custom_id = f"move_{move['name']}",
-            ))
+            )
+            
+            # Explicitly assign the callback to handle dynamic buttons
+            async def move_cb(interaction: discord.Interaction, m_name=move['name']):
+                await self._handle_move(interaction, m_name)
+                
+            btn.callback = move_cb
+            self.add_item(btn)
 
-        self.add_item(discord.ui.Button(label="🛡 Defend",   style=discord.ButtonStyle.secondary, custom_id="defend"))
+        btn = discord.ui.Button(label="🛡 Defend", style=discord.ButtonStyle.secondary, custom_id="defend")
+        async def defend_cb(interaction: discord.Interaction):
+            await self._handle_defend(interaction)
+        btn.callback = defend_cb
+        self.add_item(btn)
 
         op = self.current.get("squad_operator")
         if op and self.op_cooldowns.get(op, 0) <= 0:
-            self.add_item(discord.ui.Button(label="📡 Call Operator", style=discord.ButtonStyle.success, custom_id="operator"))
+            btn = discord.ui.Button(label="📡 Call Operator", style=discord.ButtonStyle.success, custom_id="operator")
+            async def op_cb(interaction: discord.Interaction):
+                await self._handle_operator(interaction)
+            btn.callback = op_cb
+            self.add_item(btn)
 
-        self.add_item(discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger, custom_id="bailout"))
+        btn = discord.ui.Button(label="🚀 Bail Out", style=discord.ButtonStyle.danger, custom_id="bailout")
+        async def bail_cb(interaction: discord.Interaction):
+            await self._handle_bailout(interaction)
+        btn.callback = bail_cb
+        self.add_item(btn)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.current["user"].id
