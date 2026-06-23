@@ -62,8 +62,8 @@ CLASSES = {
                    "description": "Unpredictable trajectories that overwhelm balanced fighters."},
     "All Rounder": {"emoji": "🌟",  "strong_against": "Attacker",
                    # Yuma Kuga is the ultimate All-Rounder. Used a Yuma gif as a placeholder!
-                   "image": "https://static.wikia.nocookie.net/worldtrigger/images/4/4f/Yuma_and_Replica_Episode_1.gif/revision/latest?cb=20150419233022",
-                   "description": "Versatile and adaptive. Handles close-combat rushdown with ease."},
+                   "image": "https://static.wikitide.net/worldtriggerwiki/f/fa/Kizaki_Hound_%28edited%29.gif",
+                   "description": "Versatile and adaptive. Handles close-combat and long-range rushdown with ease."},
 }
 CLASS_ADVANTAGE_MULT = 1.3
 
