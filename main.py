@@ -3023,62 +3023,61 @@ async def ping(interaction: discord.Interaction):
 # ============================================================
 @bot.tree.command(name="About", description="Description on Trigger Bot 2")
 async def about(interaction: discord.Interaction):
+    # Create the embed structure
+    embed = discord.Embed(
+        title="Trigger Bot 2",
+        description=(
+            "**This is the new & improved Trigger Bot based off of the anime 'World Trigger'.**\n\n"
+            "⚠️ **This Discord bot is a HUGE work in progress!** There's currently no database system "
+            "in place, so any data you create won't be saved. Treat this as a playtest until the release "
+            "candidate, as all data may be wiped at any time. ⚠️"
+        ),
+        color=COLOR
+    )
 
-# Create the embed structure
-embed = discord.Embed(
-    title="Trigger Bot 2",
-    description=(
-        "**This is the new & improved Trigger Bot based off of the anime 'World Trigger'.**\n\n"
-        "⚠️ **This Discord bot is a HUGE work in progress!** There's currently no database system "
-        "in place, so any data you create won't be saved. Treat this as a playtest until the release "
-        "candidate, as all data may be wiped at any time. ⚠️"
-    ),
-    color=COLOR
-)
+    # Add the main visual image asset
+    embed.set_image(url="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92")
 
-# Add the main visual image asset
-embed.set_image(url="https://github.com/user-attachments/assets/0ecadd1a-fcbf-4e6a-89ca-28fec7beca92")
+    # Construct the formatted sections
+    embed.add_field(
+        name="🔗 Quick Access",
+        value="👉 **[Invite link for Trigger Bot 2](https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot)**",
+        inline=False
+    )
 
-# Construct the formatted sections
-embed.add_field(
-    name="🔗 Quick Access",
-    value="👉 **[Invite link for Trigger Bot 2](https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot)**",
-    inline=False
-)
+    embed.add_field(
+        name="❒ Features",
+        value=(
+            "• Turn‑based tactical arena, duels and missions\n"
+            "• 25+ World Trigger weapons with skill trees and fusions\n"
+            "• Squad system with operators (Shiori, Asami, Hana)\n"
+            "• Kido, Shinoda, Tamakoma factions with stat bonuses\n"
+            "• Daily missions, story mode, expeditions, base defense\n"
+            "• Trigger mastery, stat/skill progression, redeem codes\n\n"
+            "*Use `/help` to see the full list in Discord.*"
+        ),
+        inline=False
+    )
 
-embed.add_field(
-    name="❒ Features",
-    value=(
-        "• Turn‑based tactical arena, duels and missions\n"
-        "• 25+ World Trigger weapons with skill trees and fusions\n"
-        "• Squad system with operators (Shiori, Asami, Hana)\n"
-        "• Kido, Shinoda, Tamakoma factions with stat bonuses\n"
-        "• Daily missions, story mode, expeditions, base defense\n"
-        "• Trigger mastery, stat/skill progression, redeem codes\n\n"
-        "*Use `/help` to see the full list in Discord.*"
-    ),
-    inline=False
-)
+    embed.add_field(
+        name="❒ How to Play",
+        value=(
+            "1. Start with `/joinborder` – you'll get a Trion level and a side effect.\n"
+            "2. Choose a class (`/setclass`) and a faction (`/faction`).\n"
+            "3. Buy triggers from `/shop` and equip them with `/equip`.\n"
+            "4. Enter `/arena` or `/mission` to fight Neighbors, earn credits, stat points, and trigger XP.\n"
+            "5. Level up your triggers and spend skill points to unlock new moves.\n"
+            "6. Form a squad, assign an operator, and challenge other players in `/duel`.\n"
+            "7. Climb the ranks from C‑Rank to A‑Rank."
+        ),
+        inline=False
+    )
 
-embed.add_field(
-    name="❒ How to Play",
-    value=(
-        "1. Start with `/joinborder` – you’ll get a Trion level and a side effect.\n"
-        "2. Choose a class (`/setclass`) and a faction (`/faction`).\n"
-        "3. Buy triggers from `/shop` and equip them with `/equip`.\n"
-        "4. Enter `/arena` or `/mission` to fight Neighbors, earn credits, stat points, and trigger XP.\n"
-        "5. Level up your triggers and spend skill points to unlock new moves.\n"
-        "6. Form a squad, assign an operator, and challenge other players in `/duel`.\n"
-        "7. Climb the ranks from C‑Rank to A‑Rank."
-    ),
-    inline=False
-)
+    embed.set_footer(
+        text="❒ License: This bot's source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!"
+    )
 
-embed.set_footer(
-    text="❒ License: This bot’s source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!"
-)
-
-await interaction.response.send_message(embed=embed)
+    await interaction.response.send_message(embed=embed)
 # ============================================================
 # EVENTS
 # ============================================================
