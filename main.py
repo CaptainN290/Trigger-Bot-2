@@ -3021,7 +3021,7 @@ async def ping(interaction: discord.Interaction):
 # ============================================================
 # /about
 # ============================================================
-@bot.tree.command(name="About", description="Description on Trigger Bot 2")
+@bot.tree.command(name="about", description="Description on Trigger Bot 2")
 async def about(interaction: discord.Interaction):
     # Create the embed structure
     embed = discord.Embed(
