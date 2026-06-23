@@ -3022,7 +3022,7 @@ async def ping(interaction: discord.Interaction):
 # /about
 # ============================================================
 @bot.tree.command(name="About", description="Description on Trigger Bot 2")
-import discord
+async def about(interaction: discord.Interaction):
 
 # Create the embed structure
 embed = discord.Embed(
@@ -3078,6 +3078,7 @@ embed.set_footer(
     text="❒ License: This bot’s source code is proprietary and protected by copyright. Unauthorised copying, modification, or redistribution of the code is strictly prohibited. The bot itself may be used freely via Discord – enjoy the game!"
 )
 
+await interaction.response.send_message(embed=embed)
 # ============================================================
 # EVENTS
 # ============================================================
