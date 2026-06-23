@@ -1,5 +1,5 @@
 # ============================================================
-# WORLD TRIGGER — BORDER BOT  |  Complete Edition
+# TRIGGER BOT 2  |  BETA
 # ============================================================
 import discord
 from discord import app_commands
