@@ -27,17 +27,17 @@ COLOR   = 0x1abc9c
 # ============================================================
 FACTIONS = {
     "Kido": {
-        "emoji": "🛡️",
+        "emoji": ":Kido:",
         "description": "Believe all Neighbors are enemies. Aggressive, disciplined, powerful.",
         "buffs": {"attack": 1},
     },
     "Shinoda": {
-        "emoji": "⚖️",
+        "emoji": ":Shinoda:",
         "description": "Neutral. Prioritise citizen safety without anti-Neighbor prejudice.",
         "buffs": {"defense": 1},
     },
     "Tamakoma": {
-        "emoji": "🌟",
+        "emoji": ":Rindo:",
         "description": "Believe some Neighbors are allies. Seek to understand and befriend them.",
         "buffs": {"mobility": 1},
     },
