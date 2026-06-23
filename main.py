@@ -177,7 +177,7 @@ TRIGGERS = {
     # ── Custom ──────────────────────────────────────────────
     "Shadow Cloak": {"price": 120, "trion_cost": 2, "type": "optional", "buffs": {"evasion": 5},                "moves": []},
     "Wallbreaker":  {"price": 70,  "trion_cost": 1, "type": "optional", "buffs": {"attack": 3},                 "moves": []},
-}
+
     # ── Aftokrator Black Triggers (Earned via Story) ───────
     "Organon": {
         "price": 0, "trion_cost": 5, "type": "main", "black_trigger": True,
