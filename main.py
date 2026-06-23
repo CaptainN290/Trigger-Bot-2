@@ -632,7 +632,7 @@ class TurnBattleView(discord.ui.View):
                 return trig, data
         return None, None
 
-            def _build_buttons(self):
+    def _build_buttons(self):
         self.clear_items()
         trig_name, trig_data = self._get_main_trigger()
         if not trig_name or not trig_data:
@@ -836,7 +836,7 @@ class DuelTurnView(discord.ui.View):
                 return trig, data
         return None, None
 
-        def _build_buttons(self):
+    def _build_buttons(self):
         self.clear_items()
         trig_name, trig_data = self._get_main_trigger(self.current)
         if not trig_name or not trig_data:
