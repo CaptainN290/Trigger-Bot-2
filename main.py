@@ -27,17 +27,17 @@ COLOR   = 0x1abc9c
 # ============================================================
 FACTIONS = {
     "Kido": {
-        "emoji": "<:Kido:<:Kido:1518990445190053888>",
+        "emoji": "<:Kido:1518990445190053888>",
         "description": "Believe all Neighbors are enemies. Aggressive, disciplined, powerful.",
         "buffs": {"attack": 1},
     },
     "Shinoda": {
-        "emoji": "<:Shinoda:<:Rindo:1518990992710307882>",
+        "emoji": "<:Shinoda:1518989973238317077>",
         "description": "Neutral. Prioritise citizen safety without anti-Neighbor prejudice.",
         "buffs": {"defense": 1},
     },
     "Tamakoma": {
-        "emoji": "<:Rindo:<:Rindo:1518990992710307882>",
+        "emoji": "<:Rindo:1518990992710307882>",
         "description": "Believe some Neighbors are allies. Seek to understand and befriend them.",
         "buffs": {"mobility": 1},
     },
@@ -48,19 +48,19 @@ FACTIONS = {
 # Rock-paper-scissors: Attacker > Sniper > Gunner > Shooter > All Rounder > Attacker
 # ============================================================
 CLASSES = {
-    "Attacker":    {"emoji": "<:Tachikawa_Chibi<:Tachikawa_Chibi:1519442237874765868>",  "strong_against": "Sniper",
+    "Attacker":    {"emoji": "<:Tachikawa_Chibi:1519442237874765868>",  "strong_against": "Sniper",
                    "image": "https://static.wikitide.net/worldtriggerwiki/b/b2/Tachikawa_deflecting_despinis.gif",
                    "description": "Close-combat specialist. Closes distance to overwhelm snipers."},
-    "Sniper":      {"emoji": "<:Toma_Chibi:<:Tachikawa_Chibi:1519442237874765868>",  "strong_against": "Gunner",
+    "Sniper":      {"emoji": "<:Toma_Chibi:1519442091736825986>",  "strong_against": "Gunner",
                    "image": "https://static.wikitide.net/worldtriggerwiki/a/a8/Toma_Egret.gif",
                    "description": "Long-range precision. Outranges and punishes gunner positioning."},
-    "Gunner":      {"emoji": "<:Jun_Chibi:<:Tachikawa_Chibi:1519442237874765868>",  "strong_against": "Shooter",
+    "Gunner":      {"emoji": "<:Jun_Chibi:1519442008819765409>",  "strong_against": "Shooter",
                    "image": "https://i.redd.it/eq7jxwbl1jwg1.gif",
                    "description": "Accurate suppressive fire. More reliable than unpredictable trajectories."},
-    "Shooter":     {"emoji": "<:Ninomiya_Chibi:<:Ninomiya_Chibi:1519441882701234216>",  "strong_against": "All Rounder",
+    "Shooter":     {"emoji": "<:Ninomiya_Chibi:1519441882701234216>",  "strong_against": "All Rounder",
                    "image": "https://static.wikia.nocookie.net/worldtrigger/images/6/6f/Izumi_Viper_anime.gif/revision/latest?cb=20160420224052",
                    "description": "Unpredictable trajectories that overwhelm balanced fighters."},
-    "All Rounder": {"emoji": "<:Reiji_Chibi:<:Reiji_Chibi:1519441141714391090>",  "strong_against": "Attacker",
+    "All Rounder": {"emoji": "<:Reiji_Chibi:1519441141714391090>",  "strong_against": "Attacker",
                    # Yuma Kuga is the ultimate All-Rounder. Used a Yuma gif as a placeholder!
                    "image": "https://static.wikitide.net/worldtriggerwiki/f/fa/Kizaki_Hound_%28edited%29.gif",
                    "description": "Versatile and adaptive. Handles close-combat and long-range rushdown with ease."},
