@@ -1,0 +1,57 @@
+@bot.tree.command(name="updatelog", description="Show the latest update log")
+async def updatelog(interaction: discord.Interaction):
+    try:
+        with open("updatelog.txt", "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError:
+        await interaction.response.send_message("Update log file not found.", ephemeral=True)
+        return
+
+    if not content.strip():
+        await interaction.response.send_message("Update log is empty.", ephemeral=True)
+        return
+
+    # Simple single embed if content fits
+    if len(content) <= 4096:
+        embed = discord.Embed(title="📜 Update Log", description=content, color=COLOR)
+        await interaction.response.send_message(embed=embed)
+        return
+
+    # Multi‑page embed with buttons
+    pages = [content[i:i+4096] for i in range(0, len(content), 4096)]
+    current_page = 0
+
+    def build_embed(page_num):
+        return discord.Embed(
+            title=f"📜 Update Log ({page_num+1}/{len(pages)})",
+            description=pages[page_num],
+            color=COLOR
+        )
+
+    class Paginator(discord.ui.View):
+        def __init__(self):
+            super().__init__(timeout=180)
+            self.current = 0
+            self._update_buttons()
+
+        def _update_buttons(self):
+            self.clear_items()
+            prev_btn = discord.ui.Button(label="◀ Prev", style=discord.ButtonStyle.secondary, custom_id="prev", disabled=self.current == 0)
+            next_btn = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary, custom_id="next", disabled=self.current == len(pages)-1)
+            prev_btn.callback = self.prev_callback
+            next_btn.callback = self.next_callback
+            self.add_item(prev_btn)
+            self.add_item(next_btn)
+
+        async def prev_callback(self, interaction: discord.Interaction):
+            self.current -= 1
+            self._update_buttons()
+            await interaction.response.edit_message(embed=build_embed(self.current), view=self)
+
+        async def next_callback(self, interaction: discord.Interaction):
+            self.current += 1
+            self._update_buttons()
+            await interaction.response.edit_message(embed=build_embed(self.current), view=self)
+
+    view = Paginator()
+    await interaction.response.send_message(embed=build_embed(0), view=view)
