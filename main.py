@@ -528,7 +528,7 @@ class ShopView(discord.ui.View):
     def build_embed(self) -> discord.Embed:
         start   = self.page * TRIGGERS_PER_PAGE
         entries = self.trigger_list[start : start + TRIGGERS_PER_PAGE]
-        embed   = discord.Embed(title="🛒 Border Trigger Shop",
+        embed   = discord.Embed(title="<:Border:1519494342799130695> Border Trigger Shop",
                                 description="Purchase triggers using Credits.",
                                 color=COLOR)
         for name, data in entries:
@@ -539,7 +539,7 @@ class ShopView(discord.ui.View):
             buffs    = ", ".join(f"{k}+{v}" for k, v in data["buffs"].items())
             embed.add_field(
                 name  = f"<:Trigger:1518993124406333661> {name}  ({data['type'].capitalize()}){suffix}",
-                value = f"💰 **{data['price']} Credits**  ⚡ Trion: {data['trion_cost']}\n📊 {buffs}",
+                value = f"<:Yen:1519498350364332082> **{data['price']} Credits**  <:TrionCube:1519499035613073438> Trion: {data['trion_cost']}\n📊 {buffs}",
                 inline=False)
         embed.set_footer(text=f"Page {self.page+1}/{self.total_pages} · Use /buytrigger <name>")
         return embed
@@ -3104,7 +3104,7 @@ async def on_message(message):
     if bot.user in message.mentions:
         await message.channel.send(
             embed=discord.Embed(
-                title       = "👋 Welcome Agent!",
+                title       = "<:Replica:1519462887351914496> Welcome Agent!",
                 description = f"Hello {message.author.mention}! Start your journey with **/joinborder**.",
                 color       = COLOR))
     await bot.process_commands(message)
@@ -3113,7 +3113,7 @@ async def on_message(message):
 # MAIN
 # ============================================================
 async def main():
-    print("🚀 Starting Border Bot…")
+    print("🚀 Starting Trigger Bot 2…")
     async with bot:
         await bot.start(TOKEN)
 
