@@ -13,6 +13,8 @@ import os
 import traceback
 import datetime
 from dotenv import load_dotenv
+from flask import Flask, send_file
+import threading
 from web import keep_alive
 keep_alive()
 
@@ -1289,6 +1291,14 @@ EXPEDITION_DURATION   = 4 * 3600
 LOADOUT_SLOTS          = ["Main", "Sub", "Optional"]
 MAIN_COMPATIBLE_SLOTS  = ["Main", "Sub"]
 OPT_COMPATIBLE_SLOTS   = ["Optional"]
+
+# ── Flask web server ──────────────────────────────
+flask_app = Flask(__name__)
+
+@flask_app.route('/')
+def home():
+    return send_file('index.html')
+# ───────────────────────────────────────────────────
 
 # ============================================================
 # HELPERS
@@ -3182,4 +3192,13 @@ async def main():
         await bot.start(TOKEN)
 
 if __name__ == "__main__":
+    # Start Flask in a background thread
+    port = int(os.environ.get('PORT', 5000))
+    flask_thread = threading.Thread(
+        target=lambda: flask_app.run(host='0.0.0.0', port=port, debug=False),
+        daemon=True
+    )
+    flask_thread.start()
+
+    # Start the bot (exactly as before)
     asyncio.run(main())
