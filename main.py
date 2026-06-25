@@ -15,8 +15,7 @@ import datetime
 from dotenv import load_dotenv
 from flask import Flask, send_file
 import threading
-from web import keep_alive
-keep_alive()
+
 
 # ============================================================
 # CONFIG
