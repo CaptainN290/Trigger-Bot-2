@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trigger Bot 2 — Border Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ────────────────────────────────────────────── */
+:root {
+  --green:     #1abc9c;
+  --green-dim: #13a085;
+  --green-glow:#1abc9c33;
+  --green-pale:#f0fdfb;
+  --dark:      #0d1117;
+  --dark-2:    #161b22;
+  --dark-3:    #1c2128;
+  --white:     #ffffff;
+  --off-white: #f8fffe;
+  --text:      #1a2332;
+  --text-muted:#556070;
+  --border:    #e2f5f1;
+  --border-dark:#1abc9c22;
+  --font-head: 'Rajdhani', 'Eurostile', 'Impact', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius:    4px;
+  --shadow:    0 2px 20px rgba(26,188,156,.12);
+  --shadow-lg: 0 8px 48px rgba(26,188,156,.18);
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--white);color:var(--text);overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+ul{list-style:none}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+
+/* ─── NAV ────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  height:60px;
+  display:flex;align-items:center;
+  padding:0 5%;
+}
+.nav-inner{width:100%;max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:40px}
+.nav-logo{
+  font-family:var(--font-head);font-size:1.25rem;font-weight:700;letter-spacing:.08em;
+  color:var(--green);white-space:nowrap;
+}
+.nav-logo span{color:var(--text)}
+.nav-links{display:flex;gap:28px;margin-left:auto}
+.nav-links a{
+  font-size:.82rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);transition:color .2s;
+}
+.nav-links a:hover{color:var(--green)}
+.nav-cta{
+  margin-left:20px;
+  background:var(--green);color:#fff;
+  padding:7px 18px;border-radius:var(--radius);
+  font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  transition:background .2s,transform .15s;white-space:nowrap;
+}
+.nav-cta:hover{background:var(--green-dim);transform:translateY(-1px)}
+
+/* ─── HERO ───────────────────────────────────────────────── */
+.hero{
+  min-height:100vh;padding-top:60px;
+  background:var(--dark);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(26,188,156,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,188,156,.07) 1px,transparent 1px);
+  background-size:48px 48px;
+  animation:gridShift 20s linear infinite;
+}
+@keyframes gridShift{to{background-position:48px 48px}}
+.hero-scanline{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+  pointer-events:none;
+}
+.hero-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(26,188,156,.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-content{
+  position:relative;z-index:2;
+  text-align:center;padding:0 20px;
+  max-width:860px;
+}
+.hero-eyebrow{
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--green);margin-bottom:20px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{
+  content:'';width:40px;height:1px;background:var(--green);opacity:.5;
+}
+.hero-title{
+  font-family:var(--font-head);font-size:clamp(3rem,8vw,6rem);font-weight:700;
+  color:var(--white);line-height:1;letter-spacing:.04em;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.hero-title .accent{color:var(--green)}
+.hero-subtitle{
+  font-family:var(--font-head);font-size:clamp(1rem,2.5vw,1.5rem);font-weight:500;
+  color:#8ca0b0;letter-spacing:.18em;text-transform:uppercase;margin-bottom:32px;
+}
+.hero-desc{
+  font-size:1rem;color:#8ca0b0;line-height:1.7;max-width:560px;margin:0 auto 40px;
+}
+.hero-buttons{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  background:var(--green);color:#fff;
+  padding:13px 32px;border-radius:var(--radius);
+  font-family:var(--font-head);font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  transition:all .2s;border:2px solid var(--green);
+}
+.btn-primary:hover{background:var(--green-dim);border-color:var(--green-dim);transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,188,156,.35)}
+.btn-outline{
+  background:transparent;color:var(--green);
+  padding:13px 32px;border-radius:var(--radius);
+  font-family:var(--font-head);font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  border:2px solid rgba(26,188,156,.4);
+  transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--green);background:var(--green-glow);transform:translateY(-2px)}
+.hero-stats{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;gap:48px;z-index:2;
+}
+.hero-stat{text-align:center}
+.hero-stat-num{
+  font-family:var(--font-head);font-size:2rem;font-weight:700;color:var(--green);
+  line-height:1;
+}
+.hero-stat-label{font-size:.7rem;color:#556070;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+.blink{animation:blink 1.2s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ─── SECTION SHELL ──────────────────────────────────────── */
+section{padding:100px 5%}
+.section-inner{max-width:1280px;margin:0 auto}
+.section-label{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--green);margin-bottom:12px;
+}
+.section-title{
+  font-family:var(--font-head);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;
+  color:var(--text);letter-spacing:.04em;text-transform:uppercase;line-height:1.1;margin-bottom:16px;
+}
+.section-sub{font-size:1rem;color:var(--text-muted);max-width:540px;line-height:1.65}
+.divider{width:48px;height:3px;background:var(--green);margin:20px 0 48px}
+
+/* ─── STATUS BAR ─────────────────────────────────────────── */
+.status-bar{
+  background:var(--dark);color:var(--green);
+  padding:10px 5%;
+  display:flex;align-items:center;gap:32px;overflow-x:auto;
+  font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;
+}
+.status-item{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-dot.red{background:#e74c3c;box-shadow:0 0 6px #e74c3c}
+.status-dot.yellow{background:#f1c40f;box-shadow:0 0 6px #f1c40f}
+
+/* ─── FEATURES ───────────────────────────────────────────── */
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;
+}
+.feature-card{
+  background:var(--off-white);border:1px solid var(--border);
+  border-radius:var(--radius);padding:32px;
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--green);transform:scaleX(0);transform-origin:left;
+  transition:transform .3s;
+}
+.feature-card:hover::before{transform:scaleX(1)}
+.feature-card:hover{border-color:rgba(26,188,156,.35);box-shadow:var(--shadow)}
+.feature-icon{
+  width:44px;height:44px;background:var(--green-glow);border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+  font-size:1.3rem;
+}
+.feature-title{
+  font-family:var(--font-head);font-size:1.15rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:10px;color:var(--text);
+}
+.feature-desc{font-size:.88rem;color:var(--text-muted);line-height:1.65}
+
+/* ─── LEADERBOARD ────────────────────────────────────────── */
+#leaderboard{background:var(--off-white)}
+.lb-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+.lb-filter{
+  background:var(--white);border:1px solid var(--border);
+  padding:8px 16px;border-radius:var(--radius);
+  font-family:var(--font-head);font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);cursor:pointer;transition:all .2s;
+}
+.lb-filter.active,.lb-filter:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.lb-table{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;
+}
+.lb-header{
+  display:grid;grid-template-columns:48px 1fr 120px 100px 100px 100px;
+  padding:12px 20px;background:var(--dark);
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#8ca0b0;
+}
+.lb-row{
+  display:grid;grid-template-columns:48px 1fr 120px 100px 100px 100px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  align-items:center;transition:background .15s;
+}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:var(--green-pale)}
+.lb-rank{
+  font-family:var(--font-head);font-size:1.1rem;font-weight:700;
+  color:var(--text-muted);
+}
+.lb-rank.gold{color:#f1c40f}.lb-rank.silver{color:#bdc3c7}.lb-rank.bronze{color:#cd7f32}
+.lb-name{display:flex;align-items:center;gap:10px;font-weight:500}
+.lb-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--green-dim));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-head);font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.lb-elo{font-family:var(--font-mono);font-size:.85rem;font-weight:500;color:var(--green)}
+.badge{
+  display:inline-block;padding:2px 8px;border-radius:2px;
+  font-family:var(--font-mono);font-size:.65rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+}
+.badge-a{background:#f39c1222;color:#f39c12}
+.badge-b{background:#3498db22;color:#3498db}
+.badge-c{background:#95a5a622;color:#95a5a6}
+.badge-green{background:var(--green-glow);color:var(--green)}
+
+/* ─── TRIGGER DB ─────────────────────────────────────────── */
+#triggers{background:var(--white)}
+.trigger-search{
+  display:flex;gap:12px;margin-bottom:28px;flex-wrap:wrap;
+}
+.search-input{
+  flex:1;min-width:200px;
+  background:var(--off-white);border:1px solid var(--border);
+  padding:10px 16px;border-radius:var(--radius);
+  font-family:var(--font-body);font-size:.9rem;color:var(--text);
+  outline:none;transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--green)}
+.search-input::placeholder{color:var(--text-muted)}
+.trigger-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;
+}
+.trigger-card{
+  background:var(--off-white);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;transition:all .2s;cursor:pointer;
+  position:relative;
+}
+.trigger-card:hover{border-color:var(--green);box-shadow:var(--shadow)}
+.trigger-card.main-type::after{
+  content:'MAIN';position:absolute;top:12px;right:12px;
+  font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;
+  background:var(--green-glow);color:var(--green);padding:2px 6px;border-radius:2px;
+}
+.trigger-card.optional-type::after{
+  content:'OPTIONAL';position:absolute;top:12px;right:12px;
+  font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;
+  background:#3498db22;color:#3498db;padding:2px 6px;border-radius:2px;
+}
+.trigger-card.black-type::after{
+  content:'BLACK TRIGGER';position:absolute;top:12px;right:12px;
+  font-family:var(--font-mono);font-size:.6rem;letter-spacing:.1em;
+  background:#e74c3c22;color:#e74c3c;padding:2px 6px;border-radius:2px;
+}
+.trigger-name{
+  font-family:var(--font-head);font-size:1.1rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text);margin-bottom:8px;margin-right:80px;
+}
+.trigger-price{font-size:.8rem;color:var(--text-muted);margin-bottom:12px}
+.trigger-price span{color:var(--green);font-weight:600}
+.trigger-buffs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.buff-tag{
+  font-family:var(--font-mono);font-size:.65rem;
+  background:var(--green-glow);color:var(--green);
+  padding:2px 8px;border-radius:2px;
+}
+.trigger-moves{border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+.trigger-moves-title{font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.move-item{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:.82rem}
+.move-name{color:var(--text);font-weight:500}
+.move-dmg{font-family:var(--font-mono);color:var(--green);font-size:.78rem}
+.trigger-hidden{display:none}
+
+/* ─── DAMAGE CALCULATOR ──────────────────────────────────── */
+#calculator{background:var(--dark);color:var(--white)}
+#calculator .section-title{color:var(--white)}
+#calculator .section-sub{color:#8ca0b0}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+@media(max-width:768px){.calc-grid{grid-template-columns:1fr}}
+.calc-panel{
+  background:var(--dark-2);border:1px solid var(--border-dark);
+  border-radius:var(--radius);padding:28px;
+}
+.calc-panel-title{
+  font-family:var(--font-head);font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--green);margin-bottom:24px;
+  display:flex;align-items:center;gap:8px;
+}
+.calc-panel-title::after{content:'';flex:1;height:1px;background:var(--border-dark)}
+.form-group{margin-bottom:18px}
+.form-label{
+  display:block;font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  color:#8ca0b0;margin-bottom:6px;
+}
+.form-select, .form-input-num{
+  width:100%;background:var(--dark-3);border:1px solid var(--border-dark);
+  padding:10px 12px;border-radius:var(--radius);
+  font-family:var(--font-body);font-size:.9rem;color:var(--white);
+  outline:none;transition:border-color .2s;appearance:none;
+}
+.form-select:focus,.form-input-num:focus{border-color:var(--green)}
+.form-select option{background:var(--dark-2)}
+.stat-sliders{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-slider-group{display:flex;flex-direction:column;gap:4px}
+.stat-slider-label{font-size:.72rem;color:#8ca0b0;letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between}
+.stat-slider-label span{color:var(--green);font-weight:600}
+input[type=range]{
+  width:100%;accent-color:var(--green);height:4px;
+  background:var(--dark-3);border-radius:2px;cursor:pointer;
+}
+.calc-result{
+  text-align:center;padding:32px;
+  background:var(--dark-3);border:1px solid var(--border-dark);
+  border-radius:var(--radius);margin-top:24px;
+  position:relative;overflow:hidden;
+}
+.calc-result::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 100%,rgba(26,188,156,.12),transparent 60%);
+  pointer-events:none;
+}
+.calc-dmg-num{
+  font-family:var(--font-head);font-size:clamp(3rem,6vw,4.5rem);font-weight:700;
+  color:var(--green);line-height:1;
+  text-shadow:0 0 40px rgba(26,188,156,.4);
+}
+.calc-dmg-label{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:#8ca0b0;margin-top:8px}
+.calc-btn{
+  width:100%;background:var(--green);color:#fff;
+  padding:12px;border-radius:var(--radius);
+  font-family:var(--font-head);font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  transition:all .2s;margin-top:20px;
+}
+.calc-btn:hover{background:var(--green-dim);transform:translateY(-1px)}
+.calc-breakdown{
+  font-family:var(--font-mono);font-size:.72rem;color:#8ca0b0;line-height:1.8;
+  text-align:left;margin-top:16px;padding:12px;
+  background:rgba(0,0,0,.2);border-radius:var(--radius);
+}
+
+/* ─── COMMANDS ───────────────────────────────────────────── */
+#commands{background:var(--off-white)}
+.cmd-tabs{display:flex;gap:4px;margin-bottom:28px;background:var(--white);padding:4px;border-radius:var(--radius);border:1px solid var(--border);width:fit-content;flex-wrap:wrap}
+.cmd-tab{
+  padding:8px 18px;border-radius:2px;
+  font-family:var(--font-head);font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text-muted);cursor:pointer;transition:all .2s;
+}
+.cmd-tab.active{background:var(--green);color:#fff}
+.cmd-list{display:grid;gap:8px}
+.cmd-item{
+  display:flex;align-items:flex-start;gap:16px;
+  background:var(--white);border:1px solid var(--border);
+  padding:16px 20px;border-radius:var(--radius);transition:all .2s;
+}
+.cmd-item:hover{border-color:rgba(26,188,156,.4);box-shadow:var(--shadow)}
+.cmd-name{
+  font-family:var(--font-mono);font-size:.88rem;font-weight:500;
+  color:var(--green);min-width:180px;white-space:nowrap;flex-shrink:0;
+}
+.cmd-desc{font-size:.88rem;color:var(--text-muted);line-height:1.5}
+.cmd-panel{display:none}
+.cmd-panel.active{display:grid}
+
+/* ─── GUIDE ──────────────────────────────────────────────── */
+#guide{background:var(--white)}
+.guide-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.guide-step{
+  border-left:3px solid var(--green);padding-left:20px;
+}
+.guide-step-num{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green);margin-bottom:8px;
+}
+.guide-step-title{
+  font-family:var(--font-head);font-size:1.05rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--text);margin-bottom:8px;
+}
+.guide-step-desc{font-size:.86rem;color:var(--text-muted);line-height:1.65}
+.guide-step-cmd{
+  display:inline-block;margin-top:10px;
+  font-family:var(--font-mono);font-size:.78rem;
+  background:var(--green-glow);color:var(--green);
+  padding:3px 10px;border-radius:2px;
+}
+
+/* ─── INVITE BANNER ──────────────────────────────────────── */
+.invite-banner{
+  background:var(--dark);padding:80px 5%;text-align:center;
+  position:relative;overflow:hidden;
+}
+.invite-banner::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(26,188,156,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(26,188,156,.05) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.invite-banner .section-inner{position:relative;z-index:1}
+.invite-title{
+  font-family:var(--font-head);font-size:clamp(2rem,5vw,3.5rem);font-weight:700;
+  color:var(--white);letter-spacing:.06em;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.invite-sub{color:#8ca0b0;margin-bottom:36px;font-size:1rem}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+footer{
+  background:var(--dark);border-top:1px solid var(--border-dark);
+  padding:40px 5%;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
+}
+.footer-logo{
+  font-family:var(--font-head);font-size:1.1rem;font-weight:700;letter-spacing:.08em;
+  color:var(--green);
+}
+.footer-logo span{color:#556070}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:.8rem;color:#556070;transition:color .2s}
+.footer-links a:hover{color:var(--green)}
+.footer-copy{font-size:.75rem;color:#3d4f60;width:100%;text-align:center;border-top:1px solid var(--border-dark);padding-top:20px;margin-top:10px}
+
+/* ─── UTILS ──────────────────────────────────────────────── */
+.text-green{color:var(--green)}
+.text-muted{color:var(--text-muted)}
+.mb-0{margin-bottom:0!important}
+.fused-badge{
+  display:inline-block;margin-left:6px;
+  font-family:var(--font-mono);font-size:.6rem;
+  background:#9b59b622;color:#9b59b6;padding:1px 6px;border-radius:2px;
+}
+/* scroll reveal */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
+.reveal.visible{opacity:1;transform:none}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:900px){
+  .lb-header,.lb-row{grid-template-columns:40px 1fr 100px 80px}
+  .lb-row>*:nth-child(n+5),.lb-header>*:nth-child(n+5){display:none}
+  .nav-links{display:none}
+}
+@media(max-width:600px){
+  .hero-stats{gap:24px}
+  .hero-stat-num{font-size:1.5rem}
+  section{padding:72px 5%}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ──────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">TRIGGER<span>BOT</span> 2</div>
+    <div class="nav-links">
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#triggers">Triggers</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#commands">Commands</a>
+      <a href="#guide">Guide</a>
+    </div>
+    <a class="nav-cta" href="https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot" target="_blank">Add to Discord</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-scanline"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">BORDER INTELLIGENCE SYSTEM · ACTIVE</div>
+    <h1 class="hero-title">TRIGGER<br><span class="accent">BOT</span> 2</h1>
+    <p class="hero-subtitle">World Trigger Discord RPG</p>
+    <p class="hero-desc">
+      Join Border. Choose your class. Arm yourself with Triggers. Climb the ranks from C to A.
+      Turn-based tactical combat, squad systems, story mode, and full progression — all inside Discord.
+    </p>
+    <div class="hero-buttons">
+      <a class="btn-primary" href="https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot" target="_blank">Invite to Server</a>
+      <a class="btn-outline" href="#guide">How to Play</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="stat-triggers">25+</div>
+      <div class="hero-stat-label">Triggers</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">5</div>
+      <div class="hero-stat-label">Combat Classes</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3</div>
+      <div class="hero-stat-label">Factions</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">10+</div>
+      <div class="hero-stat-label">Story Missions</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATUS BAR ────────────────────────────────────────── -->
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot"></div> BOT ONLINE</div>
+  <div class="status-item"><div class="status-dot"></div> DATABASE: CONNECTED</div>
+  <div class="status-item"><div class="status-dot yellow"></div> RANK WARS: COMING SOON</div>
+  <div class="status-item"><div class="status-dot"></div> STORY: PROLOGUE ARC ACTIVE</div>
+  <div class="status-item"><div class="status-dot"></div> VERSION: BETA</div>
+</div>
+
+<!-- ─── FEATURES ──────────────────────────────────────────── -->
+<section id="features">
+  <div class="section-inner">
+    <p class="section-label reveal">What's Inside</p>
+    <h2 class="section-title reveal">FULL RPG.<br>ALL IN DISCORD.</h2>
+    <div class="divider reveal"></div>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚔️</div>
+        <div class="feature-title">Turn-Based Combat</div>
+        <p class="feature-desc">Strategic PvE arena battles and PvP duels. Use your trigger's moves, defend, call your operator, or bail out.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🔫</div>
+        <div class="feature-title">25+ Triggers</div>
+        <p class="feature-desc">Kogetsu, Ibis, Viper, Scorpion, Black Triggers, and fused combos — each with unique moves and stat buffs.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🧬</div>
+        <div class="feature-title">Trion & Side Effects</div>
+        <p class="feature-desc">Rare trion rolls from 2 to 38. Random side effects including Future Sight, Combat Instinct, and Lie Detection.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🏛️</div>
+        <div class="feature-title">Faction System</div>
+        <p class="feature-desc">Join Kido, Shinoda, or Tamakoma. Each faction grants unique passive stat bonuses that affect all battles.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">👥</div>
+        <div class="feature-title">Squad System</div>
+        <p class="feature-desc">Form squads of up to 5 agents. Assign operators (Shiori, Asami, Hana) for in-battle tactical abilities.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">📖</div>
+        <div class="feature-title">Story Mode</div>
+        <p class="feature-desc">Play through the Prologue arc — exploration missions, branching choices, boss fights, and the Aftokrator Invasion.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🧩</div>
+        <div class="feature-title">Skill Trees</div>
+        <p class="feature-desc">Unlock class-specific skills with skill points earned from battles. Passive damage multipliers and stat boosts.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Trigger Forge</div>
+        <p class="feature-desc">Fuse compatible triggers into powerful combined weapons. Kogetsu + Scorpion = Kogetsu: Mantis, and more.</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🌌</div>
+        <div class="feature-title">Expeditions & Daily Missions</div>
+        <p class="feature-desc">B-Rank+ agents can go on 4-hour expeditions for big credit and spin rewards. New daily missions every day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── LEADERBOARD ───────────────────────────────────────── -->
+<section id="leaderboard">
+  <div class="section-inner">
+    <p class="section-label reveal">Live Rankings</p>
+    <h2 class="section-title reveal">AGENT LEADERBOARD</h2>
+    <div class="divider reveal"></div>
+    <div class="lb-controls reveal">
+      <button class="lb-filter active" data-filter="all">All Agents</button>
+      <button class="lb-filter" data-filter="a-rank">A-Rank</button>
+      <button class="lb-filter" data-filter="b-rank">B-Rank</button>
+      <button class="lb-filter" data-filter="attacker">Attackers</button>
+      <button class="lb-filter" data-filter="sniper">Snipers</button>
+      <button class="lb-filter" data-filter="kido">Kido</button>
+      <button class="lb-filter" data-filter="tamakoma">Tamakoma</button>
+    </div>
+    <div class="lb-table reveal">
+      <div class="lb-header">
+        <span>#</span><span>Agent</span><span>Rank</span><span>ELO</span><span>W/L</span><span>Class</span>
+      </div>
+      <!-- sample rows – in a live build these come from the bot's database API -->
+      <div class="lb-row">
+        <span class="lb-rank gold">1</span>
+        <span class="lb-name"><div class="lb-avatar">Y</div>Yūma K.</span>
+        <span><div class="badge badge-a">A-Rank</div></span>
+        <span class="lb-elo">1842</span>
+        <span class="text-muted" style="font-size:.82rem">47 / 11</span>
+        <span><div class="badge badge-green">All Rounder</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank silver">2</span>
+        <span class="lb-name"><div class="lb-avatar">O</div>OsamuM</span>
+        <span><div class="badge badge-a">A-Rank</div></span>
+        <span class="lb-elo">1761</span>
+        <span class="text-muted" style="font-size:.82rem">39 / 18</span>
+        <span><div class="badge badge-green">Gunner</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank bronze">3</span>
+        <span class="lb-name"><div class="lb-avatar">C</div>CaptainN29</span>
+        <span><div class="badge badge-a">A-Rank</div></span>
+        <span class="lb-elo">1703</span>
+        <span class="text-muted" style="font-size:.82rem">34 / 22</span>
+        <span><div class="badge badge-green">Attacker</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank">4</span>
+        <span class="lb-name"><div class="lb-avatar">K</div>KodamaS</span>
+        <span><div class="badge badge-b">B-Rank</div></span>
+        <span class="lb-elo">1481</span>
+        <span class="text-muted" style="font-size:.82rem">28 / 24</span>
+        <span><div class="badge badge-green">Sniper</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank">5</span>
+        <span class="lb-name"><div class="lb-avatar">R</div>Replica_AI</span>
+        <span><div class="badge badge-b">B-Rank</div></span>
+        <span class="lb-elo">1388</span>
+        <span class="text-muted" style="font-size:.82rem">22 / 20</span>
+        <span><div class="badge badge-green">Shooter</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank">6</span>
+        <span class="lb-name"><div class="lb-avatar">J</div>JinAgent</span>
+        <span><div class="badge badge-b">B-Rank</div></span>
+        <span class="lb-elo">1301</span>
+        <span class="text-muted" style="font-size:.82rem">18 / 19</span>
+        <span><div class="badge badge-green">Sniper</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank">7</span>
+        <span class="lb-name"><div class="lb-avatar">H</div>HyreinX</span>
+        <span><div class="badge badge-b">B-Rank</div></span>
+        <span class="lb-elo">1255</span>
+        <span class="text-muted" style="font-size:.82rem">16 / 22</span>
+        <span><div class="badge badge-green">All Rounder</div></span>
+      </div>
+      <div class="lb-row">
+        <span class="lb-rank">8</span>
+        <span class="lb-name"><div class="lb-avatar">N</div>NewRecruit1</span>
+        <span><div class="badge badge-c">C-Rank</div></span>
+        <span class="lb-elo">1122</span>
+        <span class="text-muted" style="font-size:.82rem">10 / 14</span>
+        <span><div class="badge badge-green">Attacker</div></span>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:.78rem;color:var(--text-muted)">* Leaderboard updates after each ranked battle. Data shown is illustrative — connect your bot's API to display live rankings.</p>
+  </div>
+</section>
+
+<!-- ─── TRIGGER DATABASE ───────────────────────────────────── -->
+<section id="triggers">
+  <div class="section-inner">
+    <p class="section-label reveal">Arsenal</p>
+    <h2 class="section-title reveal">TRIGGER DATABASE</h2>
+    <div class="divider reveal"></div>
+    <div class="trigger-search reveal">
+      <input class="search-input" id="triggerSearch" type="text" placeholder="Search triggers…" oninput="filterTriggers(this.value)"/>
+      <button class="lb-filter active" onclick="filterByType('all',this)">All</button>
+      <button class="lb-filter" onclick="filterByType('main',this)">Main</button>
+      <button class="lb-filter" onclick="filterByType('optional',this)">Optional</button>
+      <button class="lb-filter" onclick="filterByType('black',this)">Black Triggers</button>
+      <button class="lb-filter" onclick="filterByType('fused',this)">Fused</button>
+    </div>
+    <div class="trigger-grid" id="triggerGrid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ─── DAMAGE CALCULATOR ─────────────────────────────────── -->
+<section id="calculator">
+  <div class="section-inner">
+    <p class="section-label reveal" style="color:var(--green)">Interactive Tool</p>
+    <h2 class="section-title reveal">DAMAGE CALCULATOR</h2>
+    <p class="section-sub reveal">Preview your estimated damage output before entering the arena.</p>
+    <div class="divider reveal"></div>
+    <div class="calc-grid">
+      <div>
+        <div class="calc-panel">
+          <div class="calc-panel-title">Your Setup</div>
+          <div class="form-group">
+            <label class="form-label">Trion Level</label>
+            <input class="form-input-num" id="c-trion" type="number" min="2" max="38" value="10"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Main Trigger</label>
+            <select class="form-select" id="c-trigger">
+              <option value="none">None</option>
+              <option value="kogetsu">Kogetsu</option>
+              <option value="raygust">Raygust</option>
+              <option value="scorpion">Scorpion</option>
+              <option value="asteroid">Asteroid</option>
+              <option value="meteor">Meteor</option>
+              <option value="hound">Hound</option>
+              <option value="viper">Viper</option>
+              <option value="ibis">Ibis</option>
+              <option value="egret">Egret</option>
+              <option value="lightning">Lightning</option>
+              <option value="organon">Organon (Black)</option>
+              <option value="vorvoros">Vorvoros (Black)</option>
+              <option value="alektor">Alektor (Black)</option>
+              <option value="kogetsu_mantis">Kogetsu: Mantis (Fused)</option>
+              <option value="raygust_cannon">Raygust: Cannon (Fused)</option>
+              <option value="viper_tracker">Viper: Tracker (Fused)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Move</label>
+            <select class="form-select" id="c-move">
+              <option value="basic">Basic Attack (×1.0)</option>
+              <option value="mid">Mid Skill (×1.4)</option>
+              <option value="heavy">Heavy Skill (×1.8)</option>
+              <option value="ultimate">Ultimate (×2.5)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Class</label>
+            <select class="form-select" id="c-class">
+              <option value="none">None</option>
+              <option value="attacker">Attacker</option>
+              <option value="sniper">Sniper</option>
+              <option value="gunner">Gunner</option>
+              <option value="shooter">Shooter</option>
+              <option value="allrounder">All Rounder</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Enemy Class (for advantage calc)</label>
+            <select class="form-select" id="c-enemy">
+              <option value="none">None</option>
+              <option value="attacker">Attacker</option>
+              <option value="sniper">Sniper</option>
+              <option value="gunner">Gunner</option>
+              <option value="shooter">Shooter</option>
+              <option value="allrounder">All Rounder</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Faction</label>
+            <select class="form-select" id="c-faction">
+              <option value="none">None</option>
+              <option value="kido">Kido (+1 ATK)</option>
+              <option value="shinoda">Shinoda (+1 DEF)</option>
+              <option value="tamakoma">Tamakoma (+1 MOB)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="calc-panel" style="margin-top:16px">
+          <div class="calc-panel-title">Stats</div>
+          <div class="stat-sliders">
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Attack <span id="v-atk">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-atk" oninput="document.getElementById('v-atk').textContent=this.value"/>
+            </div>
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Defense <span id="v-def">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-def" oninput="document.getElementById('v-def').textContent=this.value"/>
+            </div>
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Mobility <span id="v-mob">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-mob" oninput="document.getElementById('v-mob').textContent=this.value"/>
+            </div>
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Intelligence <span id="v-int">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-int" oninput="document.getElementById('v-int').textContent=this.value"/>
+            </div>
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Trion Ctrl <span id="v-tc">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-tc" oninput="document.getElementById('v-tc').textContent=this.value"/>
+            </div>
+            <div class="stat-slider-group">
+              <div class="stat-slider-label">Perception <span id="v-per">5</span></div>
+              <input type="range" min="1" max="15" value="5" id="s-per" oninput="document.getElementById('v-per').textContent=this.value"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="calc-result">
+          <div class="calc-dmg-num" id="calc-output">—</div>
+          <div class="calc-dmg-label">Estimated Damage</div>
+          <div class="calc-breakdown" id="calc-breakdown" style="display:none"></div>
+        </div>
+        <button class="calc-btn" onclick="calculateDamage()">⚡ CALCULATE DAMAGE</button>
+
+        <div class="calc-panel" style="margin-top:24px">
+          <div class="calc-panel-title">Class Advantage Chart</div>
+          <div style="display:grid;gap:8px;font-size:.82rem">
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-dark)">
+              <span style="color:var(--white)">Attacker</span><span style="color:#8ca0b0">→ beats →</span><span style="color:var(--green)">Sniper</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-dark)">
+              <span style="color:var(--white)">Sniper</span><span style="color:#8ca0b0">→ beats →</span><span style="color:var(--green)">Gunner</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-dark)">
+              <span style="color:var(--white)">Gunner</span><span style="color:#8ca0b0">→ beats →</span><span style="color:var(--green)">Shooter</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-dark)">
+              <span style="color:var(--white)">Shooter</span><span style="color:#8ca0b0">→ beats →</span><span style="color:var(--green)">All Rounder</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 0">
+              <span style="color:var(--white)">All Rounder</span><span style="color:#8ca0b0">→ beats →</span><span style="color:var(--green)">Attacker</span>
+            </div>
+          </div>
+          <p style="font-size:.72rem;color:#556070;margin-top:14px">Advantage grants ×1.3 damage multiplier.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── COMMANDS ──────────────────────────────────────────── -->
+<section id="commands">
+  <div class="section-inner">
+    <p class="section-label reveal">Reference</p>
+    <h2 class="section-title reveal">COMMAND LIST</h2>
+    <div class="divider reveal"></div>
+    <div class="cmd-tabs reveal" id="cmdTabs">
+      <button class="cmd-tab active" onclick="switchTab('start',this)">Getting Started</button>
+      <button class="cmd-tab" onclick="switchTab('combat',this)">Combat</button>
+      <button class="cmd-tab" onclick="switchTab('triggers',this)">Triggers</button>
+      <button class="cmd-tab" onclick="switchTab('stats',this)">Stats & Rank</button>
+      <button class="cmd-tab" onclick="switchTab('squads',this)">Squads</button>
+      <button class="cmd-tab" onclick="switchTab('misc',this)">Misc</button>
+    </div>
+    <div id="tab-start" class="cmd-panel active cmd-list reveal">
+      <div class="cmd-item"><span class="cmd-name">/joinborder</span><span class="cmd-desc">Register as a Border agent. Rolls your Trion level and Side Effect. Grants 5 spins and 100 credits.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/setclass [class]</span><span class="cmd-desc">Choose your combat class: Attacker, Sniper, Gunner, Shooter, or All Rounder.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/faction [name]</span><span class="cmd-desc">Join Kido, Shinoda, or Tamakoma. Each grants a passive stat buff.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/profile</span><span class="cmd-desc">View your full agent profile including stats, loadout, story progress, and daily missions.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/about</span><span class="cmd-desc">View bot info and feature overview.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/help</span><span class="cmd-desc">Show a compact command reference list.</span></div>
+    </div>
+    <div id="tab-combat" class="cmd-panel cmd-list">
+      <div class="cmd-item"><span class="cmd-name">/arena</span><span class="cmd-desc">Enter the turn-based solo arena against Neighbor waves. 30s cooldown. Win to earn ELO, stat points, trigger XP.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/duel [@user]</span><span class="cmd-desc">Challenge another agent to a turn-based PvP duel. They must accept within 60 seconds.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/mission</span><span class="cmd-desc">Accept a random defense mission — Civilian Rescue, Neighbor Ambush, Supply Defence, or HQ Breach Response.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/story</span><span class="cmd-desc">View your current story mission details and rewards.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/storymission</span><span class="cmd-desc">Play your current story chapter. Boss battles, exploration, and branching choices.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/expedition</span><span class="cmd-desc">B-Rank+ only. Launch a 4-hour expedition for big credit and spin rewards.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/bailout</span><span class="cmd-desc">Emergency bail-out. Costs 1/3 of your current Trion.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/simulation</span><span class="cmd-desc">Preview your equipped loadout in a risk-free simulation.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/combostats</span><span class="cmd-desc">Preview your estimated damage output with your current build.</span></div>
+    </div>
+    <div id="tab-triggers" class="cmd-panel cmd-list">
+      <div class="cmd-item"><span class="cmd-name">/shop</span><span class="cmd-desc">Browse the paginated Border Trigger Shop. Use ◀/▶ to page through all triggers.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/buytrigger [name]</span><span class="cmd-desc">Purchase a trigger from the shop using credits.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/equip [trigger] [slot]</span><span class="cmd-desc">Equip a trigger into Main, Sub, or Optional slot. Main-type triggers go in Main/Sub only.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/loadout</span><span class="cmd-desc">View your current trigger loadout across all three slots.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/triggerforge [t1] [t2]</span><span class="cmd-desc">Fuse two compatible main triggers into a powerful combined weapon.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/dismantle [name]</span><span class="cmd-desc">Break a combined trigger back into its two components.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/sideeffects</span><span class="cmd-desc">Browse the side effects index with rarity info.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/spin [type]</span><span class="cmd-desc">Spend a spin to reroll your Trion level or Side Effect.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/triggers_mastered</span><span class="cmd-desc">View your trigger mastery levels and XP progress.</span></div>
+    </div>
+    <div id="tab-stats" class="cmd-panel cmd-list">
+      <div class="cmd-item"><span class="cmd-name">/stats</span><span class="cmd-desc">View your attack, defense, mobility, intelligence, trion control, and perception stats.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/upgradestat [stat]</span><span class="cmd-desc">Spend a stat point to increase a stat. Cap scales with rank (C: 15, B: 30, A: 50).</span></div>
+      <div class="cmd-item"><span class="cmd-name">/skilltree</span><span class="cmd-desc">View your class's skill tree and current progress.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/upgradeskill [name]</span><span class="cmd-desc">Spend skill points to level up a class skill.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/trionrank</span><span class="cmd-desc">View your current Border rank (C/B/A) and what's needed to advance.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/leaderboard</span><span class="cmd-desc">View the top 10 agents by ELO ranking.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/missionsboard</span><span class="cmd-desc">View today's daily missions and reward progress.</span></div>
+    </div>
+    <div id="tab-squads" class="cmd-panel cmd-list">
+      <div class="cmd-item"><span class="cmd-name">/squadcreate [name]</span><span class="cmd-desc">Create a new squad. You become the leader.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/squadinvite [@user]</span><span class="cmd-desc">Leaders only. Invite a Border agent to your squad (max 5 members).</span></div>
+      <div class="cmd-item"><span class="cmd-name">/squadinfo</span><span class="cmd-desc">View your squad's name, division, ELO, operator, and all members.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/squadleave</span><span class="cmd-desc">Leave your current squad.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/operator [name]</span><span class="cmd-desc">Assign Shiori, Asami, or Hana as your squad's operator. Leaders only.</span></div>
+    </div>
+    <div id="tab-misc" class="cmd-panel cmd-list">
+      <div class="cmd-item"><span class="cmd-name">/trainers</span><span class="cmd-desc">View available Border trainers and their costs.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/train [trainer]</span><span class="cmd-desc">Pay credits to train with Shinoda, Kido, Karasuma, or Yūma for direct stat boosts.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/redeem [code]</span><span class="cmd-desc">Redeem a special code for credits, spins, or triggers.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/neighborhood</span><span class="cmd-desc">Scout your area for Neighbor threat level, HP, and damage stats.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/base</span><span class="cmd-desc">View Border Base HP and defense level.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/baseinfo</span><span class="cmd-desc">View total agents, squads, and credits in circulation server-wide.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/classes</span><span class="cmd-desc">Full class matchup chart with advantage descriptions.</span></div>
+      <div class="cmd-item"><span class="cmd-name">/ping</span><span class="cmd-desc">Check bot latency in milliseconds.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── GUIDE ─────────────────────────────────────────────── -->
+<section id="guide">
+  <div class="section-inner">
+    <p class="section-label reveal">New Agent Walkthrough</p>
+    <h2 class="section-title reveal">HOW TO PLAY</h2>
+    <div class="divider reveal"></div>
+    <div class="guide-steps">
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 01</div>
+        <div class="guide-step-title">Join Border</div>
+        <p class="guide-step-desc">Register as an agent. You'll receive a random Trion level (2–38), a possible Side Effect, 5 spins, and 100 credits.</p>
+        <span class="guide-step-cmd">/joinborder</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 02</div>
+        <div class="guide-step-title">Choose Class & Faction</div>
+        <p class="guide-step-desc">Pick from Attacker, Sniper, Gunner, Shooter, or All Rounder. Each has a rock-paper-scissors advantage. Then join a faction for passive buffs.</p>
+        <span class="guide-step-cmd">/setclass · /faction</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 03</div>
+        <div class="guide-step-title">Buy & Equip Triggers</div>
+        <p class="guide-step-desc">Browse the shop and buy triggers with credits. Equip a Main trigger and an Optional. Main triggers have combat moves; Optionals give passive buffs.</p>
+        <span class="guide-step-cmd">/shop · /buytrigger · /equip</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 04</div>
+        <div class="guide-step-title">Fight & Earn</div>
+        <p class="guide-step-desc">Enter the arena or take missions to fight Neighbors turn-by-turn. Win to earn ELO, credits, stat points, skill points, and trigger mastery XP.</p>
+        <span class="guide-step-cmd">/arena · /mission</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 05</div>
+        <div class="guide-step-title">Level Up Your Build</div>
+        <p class="guide-step-desc">Spend stat points on attack, mobility, and trion control. Unlock skills in your class tree. Master triggers to unlock higher-damage moves.</p>
+        <span class="guide-step-cmd">/upgradestat · /upgradeskill</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 06</div>
+        <div class="guide-step-title">Form a Squad</div>
+        <p class="guide-step-desc">Create a squad, invite allies, and assign an operator. Operators provide in-battle abilities: damage boosts, strikes, and cooldown reduction.</p>
+        <span class="guide-step-cmd">/squadcreate · /operator</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 07</div>
+        <div class="guide-step-title">Reach A-Rank</div>
+        <p class="guide-step-desc">Climb from C-Rank (ELO 0–1199) to B-Rank (1200+) to A-Rank (1600+). Higher ranks unlock bigger stat caps and expedition access.</p>
+        <span class="guide-step-cmd">/trionrank · /leaderboard</span>
+      </div>
+      <div class="guide-step reveal">
+        <div class="guide-step-num">Step 08</div>
+        <div class="guide-step-title">Play Story Mode</div>
+        <p class="guide-step-desc">Work through the Prologue arc — exploration, choices, boss battles against Aftokrator Black Trigger users. Complete them to earn rare triggers.</p>
+        <span class="guide-step-cmd">/story · /storymission</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INVITE BANNER ─────────────────────────────────────── -->
+<div class="invite-banner">
+  <div class="section-inner">
+    <h2 class="invite-title">READY TO JOIN <span style="color:var(--green)">BORDER?</span></h2>
+    <p class="invite-sub">Add Trigger Bot 2 to your server and start your agent career today.</p>
+    <a class="btn-primary" href="https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot" target="_blank">Invite Trigger Bot 2</a>
+  </div>
+</div>
+
+<!-- ─── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo">TRIGGER<span>BOT 2</span></div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#triggers">Triggers</a>
+    <a href="#commands">Commands</a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1483152396418023424&permissions=8&integration_type=0&scope=bot" target="_blank">Invite</a>
+  </div>
+  <p class="footer-copy">
+    This bot's source code is proprietary and protected by copyright. Trigger Bot 2 is a fan project based on the World Trigger anime/manga by Daisuke Ashihara. Not affiliated with or endorsed by Shueisha or Toei Animation.
+  </p>
+</footer>
+
+<!-- ─── SCRIPTS ───────────────────────────────────────────── -->
+<script>
+/* ── TRIGGER DATA ────────────────────────────────────────── */
+const TRIGGERS_DATA = [
+  // Attacker
+  {name:"Kogetsu",type:"main",cat:"attacker",price:80,trionCost:2,buffs:{attack:5,defense:1},moves:[{name:"Slash",dmg:"×1.0"},{name:"Senkū",dmg:"×1.5"},{name:"Whirlwind",dmg:"×1.8"}]},
+  {name:"Raygust",type:"main",cat:"attacker",price:90,trionCost:3,buffs:{attack:3,defense:4},moves:[{name:"Shield Bash",dmg:"×0.8"},{name:"Raygust Slash",dmg:"×1.2"},{name:"Full Guard",dmg:"×0.5"}]},
+  {name:"Scorpion",type:"main",cat:"attacker",price:100,trionCost:2,buffs:{attack:4,mobility:3},moves:[{name:"Sting",dmg:"×1.2"},{name:"Mole Claw",dmg:"×1.5"},{name:"Scorpion Pin",dmg:"×1.7"}]},
+  // Shooter
+  {name:"Asteroid",type:"main",cat:"shooter",price:50,trionCost:1,buffs:{attack:3},moves:[{name:"Asteroid Shot",dmg:"×1.0"},{name:"Rapid Fire",dmg:"×1.3"},{name:"Full Burst",dmg:"×1.6"}]},
+  {name:"Meteor",type:"main",cat:"shooter",price:80,trionCost:3,buffs:{attack:5,trion_control:1},moves:[{name:"Meteor Bomb",dmg:"×1.2"},{name:"Meteor Storm",dmg:"×1.5"},{name:"Meteor Crash",dmg:"×1.9"}]},
+  {name:"Hound",type:"main",cat:"shooter",price:90,trionCost:2,buffs:{attack:4,intelligence:1},moves:[{name:"Hound Chaser",dmg:"×1.1"},{name:"Hound Volley",dmg:"×1.4"},{name:"Hound Swarm",dmg:"×1.6"}]},
+  {name:"Viper",type:"main",cat:"shooter",price:120,trionCost:3,buffs:{attack:4,intelligence:2},moves:[{name:"Viper Bite",dmg:"×1.2"},{name:"Viper Path",dmg:"×1.5"},{name:"Viper Cage",dmg:"×1.8"}]},
+  // Sniper
+  {name:"Ibis",type:"main",cat:"sniper",price:150,trionCost:5,buffs:{attack:8,trion_control:2},moves:[{name:"Ibis Pierce",dmg:"×1.5"},{name:"Ibis Break",dmg:"×2.0"},{name:"Ibis Siege",dmg:"×2.5"}]},
+  {name:"Egret",type:"main",cat:"sniper",price:100,trionCost:3,buffs:{attack:5,perception:1},moves:[{name:"Egret Snipe",dmg:"×1.2"},{name:"Egret Focus",dmg:"×1.5"},{name:"Egret Eagle",dmg:"×1.8"}]},
+  {name:"Lightning",type:"main",cat:"sniper",price:80,trionCost:2,buffs:{attack:4,mobility:1},moves:[{name:"Lightning Bolt",dmg:"×1.1"},{name:"Lightning Flash",dmg:"×1.4"},{name:"Lightning Storm",dmg:"×1.7"}]},
+  // Optional
+  {name:"Grasshopper",type:"optional",cat:"optional",price:60,trionCost:1,buffs:{mobility:5},moves:[]},
+  {name:"Bagworm",type:"optional",cat:"optional",price:50,trionCost:1,buffs:{evasion:3,mobility:1},moves:[]},
+  {name:"Shield",type:"optional",cat:"optional",price:40,trionCost:1,buffs:{defense:4},moves:[]},
+  {name:"Chameleon",type:"optional",cat:"optional",price:90,trionCost:2,buffs:{evasion:5},moves:[]},
+  {name:"Spider",type:"optional",cat:"optional",price:70,trionCost:2,buffs:{attack:2,intelligence:1},moves:[]},
+  {name:"Escudo",type:"optional",cat:"optional",price:75,trionCost:2,buffs:{defense:5,attack:1},moves:[]},
+  {name:"Thruster",type:"optional",cat:"optional",price:80,trionCost:2,buffs:{mobility:4,attack:1},moves:[]},
+  {name:"Silencer",type:"optional",cat:"optional",price:60,trionCost:1,buffs:{evasion:2,perception:1},moves:[]},
+  {name:"Dummy Beacon",type:"optional",cat:"optional",price:55,trionCost:1,buffs:{intelligence:3},moves:[]},
+  {name:"Shadow Cloak",type:"optional",cat:"optional",price:120,trionCost:2,buffs:{evasion:5},moves:[]},
+  {name:"Wallbreaker",type:"optional",cat:"optional",price:70,trionCost:1,buffs:{attack:3},moves:[]},
+  // Black Triggers
+  {name:"Organon",type:"black",cat:"black",price:0,trionCost:5,buffs:{attack:15,defense:5,mobility:5},moves:[{name:"Organon Slash",dmg:"×2.0"},{name:"Blade Storm",dmg:"×2.5"},{name:"Dimensional Cut",dmg:"×3.5"}]},
+  {name:"Vorvoros",type:"black",cat:"black",price:0,trionCost:5,buffs:{attack:12,defense:10,intelligence:5},moves:[{name:"Liquid Form",dmg:"×1.5"},{name:"Poison Splash",dmg:"×2.2"},{name:"Toxic Devastation",dmg:"×3.0"}]},
+  {name:"Alektor",type:"black",cat:"black",price:0,trionCost:6,buffs:{attack:14,mobility:8,perception:5},moves:[{name:"Feather Shot",dmg:"×1.8"},{name:"Homing Flock",dmg:"×2.4"},{name:"Sky God's Wrath",dmg:"×3.2"}]},
+  // Fused
+  {name:"Kogetsu: Mantis",type:"fused",cat:"fused",price:250,trionCost:4,buffs:{attack:8,mobility:5,defense:2},moves:[{name:"Mantis Slash",dmg:"×1.5"},{name:"Mantis Leap",dmg:"×1.8"},{name:"Mantis Guillotine",dmg:"×2.2"}]},
+  {name:"Raygust: Cannon",type:"fused",cat:"fused",price:200,trionCost:4,buffs:{attack:6,defense:5,trion_control:2},moves:[{name:"Cannon Bash",dmg:"×1.2"},{name:"Cannon Shot",dmg:"×1.6"},{name:"Cannon Barrage",dmg:"×2.0"}]},
+  {name:"Viper: Tracker",type:"fused",cat:"fused",price:220,trionCost:3,buffs:{attack:6,intelligence:3},moves:[{name:"Tracker Swarm",dmg:"×1.4"},{name:"Tracker Net",dmg:"×1.7"},{name:"Tracker Volley",dmg:"×2.0"}]},
+];
+
+let currentTypeFilter = 'all';
+
+function buildTriggerGrid(data) {
+  const grid = document.getElementById('triggerGrid');
+  grid.innerHTML = '';
+  data.forEach(t => {
+    const buffs = Object.entries(t.buffs).map(([k,v])=>`<span class="buff-tag">${k.replace('_',' ')}+${v}</span>`).join('');
+    const moves = t.moves.length ? `
+      <div class="trigger-moves">
+        <div class="trigger-moves-title">Moves</div>
+        ${t.moves.map(m=>`<div class="move-item"><span class="move-name">${m.name}</span><span class="move-dmg">${m.dmg}</span></div>`).join('')}
+      </div>` : '<div style="font-size:.75rem;color:var(--text-muted);margin-top:8px">Passive buffs only</div>';
+    const priceText = t.price > 0 ? `<span style="color:var(--green);font-weight:600">${t.price} Credits</span>` : `<span style="color:#e74c3c;font-weight:600">Story Reward</span>`;
+    const typeClass = t.type === 'black' ? 'black-type' : t.type === 'fused' ? 'main-type' : t.type === 'optional' ? 'optional-type' : 'main-type';
+    const fusedBadge = t.type === 'fused' ? '<span class="fused-badge">FUSED</span>' : '';
+    const card = document.createElement('div');
+    card.className = `trigger-card ${typeClass}`;
+    card.dataset.name = t.name.toLowerCase();
+    card.dataset.type = t.type;
+    card.innerHTML = `
+      <div class="trigger-name">${t.name}${fusedBadge}</div>
+      <div class="trigger-price">${priceText} &nbsp;·&nbsp; Trion cost: <span>${t.trionCost}</span></div>
+      <div class="trigger-buffs">${buffs}</div>
+      ${moves}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filterTriggers(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.trigger-card').forEach(card => {
+    const matchName = card.dataset.name.includes(q);
+    const matchType = currentTypeFilter === 'all' || card.dataset.type === currentTypeFilter;
+    card.style.display = matchName && matchType ? '' : 'none';
+  });
+}
+
+function filterByType(type, btn) {
+  currentTypeFilter = type;
+  document.querySelectorAll('.trigger-search .lb-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const q = document.getElementById('triggerSearch').value.toLowerCase();
+  document.querySelectorAll('.trigger-card').forEach(card => {
+    const matchName = card.dataset.name.includes(q);
+    const matchType = type === 'all' || card.dataset.type === type;
+    card.style.display = matchName && matchType ? '' : 'none';
+  });
+}
+
+buildTriggerGrid(TRIGGERS_DATA);
+
+/* ── DAMAGE CALCULATOR ───────────────────────────────────── */
+const CLASS_ADV = {
+  attacker:'sniper', sniper:'gunner', gunner:'shooter', shooter:'allrounder', allrounder:'attacker'
+};
+const TRIGGER_BUFFS = {
+  kogetsu:{atk:5,def:1,mob:0,int:0,tc:0,per:0},
+  raygust:{atk:3,def:4,mob:0,int:0,tc:0,per:0},
+  scorpion:{atk:4,def:0,mob:3,int:0,tc:0,per:0},
+  asteroid:{atk:3,def:0,mob:0,int:0,tc:0,per:0},
+  meteor:{atk:5,def:0,mob:0,int:0,tc:1,per:0},
+  hound:{atk:4,def:0,mob:0,int:1,tc:0,per:0},
+  viper:{atk:4,def:0,mob:0,int:2,tc:0,per:0},
+  ibis:{atk:8,def:0,mob:0,int:0,tc:2,per:0},
+  egret:{atk:5,def:0,mob:0,int:0,tc:0,per:1},
+  lightning:{atk:4,def:0,mob:1,int:0,tc:0,per:0},
+  organon:{atk:15,def:5,mob:5,int:0,tc:0,per:0},
+  vorvoros:{atk:12,def:10,mob:0,int:5,tc:0,per:0},
+  alektor:{atk:14,def:0,mob:8,int:0,tc:0,per:5},
+  kogetsu_mantis:{atk:8,def:2,mob:5,int:0,tc:0,per:0},
+  raygust_cannon:{atk:6,def:5,mob:0,int:0,tc:2,per:0},
+  viper_tracker:{atk:6,def:0,mob:0,int:3,tc:0,per:0},
+};
+const MOVE_MULT = {basic:1.0, mid:1.4, heavy:1.8, ultimate:2.5};
+
+function calculateDamage() {
+  const trion     = parseInt(document.getElementById('c-trion').value) || 10;
+  const trigKey   = document.getElementById('c-trigger').value;
+  const moveKey   = document.getElementById('c-move').value;
+  const cls       = document.getElementById('c-class').value;
+  const enemy     = document.getElementById('c-enemy').value;
+  const faction   = document.getElementById('c-faction').value;
+  const atk   = parseInt(document.getElementById('s-atk').value);
+  const def   = parseInt(document.getElementById('s-def').value);
+  const mob   = parseInt(document.getElementById('s-mob').value);
+  const intel = parseInt(document.getElementById('s-int').value);
+  const tc    = parseInt(document.getElementById('s-tc').value);
+  const per   = parseInt(document.getElementById('s-per').value);
+
+  let base = trion * 3;
+  let buff = 0;
+  let breakdown = [`Base (Trion×3): ${base}`];
+
+  // stats
+  const statBuff = atk*5 + mob*2 + intel*3 + tc*4 + per*2 + def*1;
+  buff += statBuff;
+  breakdown.push(`Stats buff: +${statBuff}`);
+
+  // trigger buffs
+  if (trigKey !== 'none' && TRIGGER_BUFFS[trigKey]) {
+    const tb = TRIGGER_BUFFS[trigKey];
+    const tBuff = tb.atk*5 + tb.mob*2 + tb.int*3 + tb.tc*4 + tb.per*2 + tb.def*1;
+    buff += tBuff;
+    breakdown.push(`Trigger buff: +${tBuff}`);
+  }
+
+  // faction
+  if (faction === 'kido') { buff += 5; breakdown.push('Kido faction: +5 (atk)'); }
+  if (faction === 'tamakoma') { buff += 2; breakdown.push('Tamakoma faction: +2 (mob)'); }
+
+  let damage = base + buff + 5; // +5 avg random
+  breakdown.push(`Pre-move total: ${damage}`);
+
+  // move multiplier
+  const moveMult = MOVE_MULT[moveKey] || 1.0;
+  damage = Math.floor(damage * moveMult);
+  breakdown.push(`Move ×${moveMult}: ${damage}`);
+
+  // class advantage
+  let advantageText = '';
+  if (cls !== 'none' && enemy !== 'none' && CLASS_ADV[cls] === enemy) {
+    damage = Math.floor(damage * 1.3);
+    advantageText = 'Class advantage ×1.3 applied!';
+    breakdown.push(advantageText);
+  }
+
+  document.getElementById('calc-output').textContent = damage;
+  const bd = document.getElementById('calc-breakdown');
+  bd.style.display = 'block';
+  bd.innerHTML = '// Breakdown\n' + breakdown.join('\n') + (advantageText ? `\n✓ ${advantageText}` : '');
+}
+
+/* ── COMMAND TABS ────────────────────────────────────────── */
+function switchTab(name, btn) {
+  document.querySelectorAll('.cmd-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cmd-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+/* ── LEADERBOARD FILTERS ─────────────────────────────────── */
+document.querySelectorAll('.lb-filter').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const parent = this.closest('.lb-controls');
+    if (!parent) return;
+    parent.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+/* ── SCROLL REVEAL ───────────────────────────────────────── */
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
