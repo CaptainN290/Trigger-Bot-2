@@ -13,6 +13,8 @@ import os
 import traceback
 import datetime
 from dotenv import load_dotenv
+from web import keep_alive
+keep_alive()
 
 # ============================================================
 # CONFIG
