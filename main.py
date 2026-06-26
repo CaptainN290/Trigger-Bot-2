@@ -1534,7 +1534,7 @@ async def joinborder(interaction: discord.Interaction):
         description = f"Welcome to **Border**, {interaction.user.display_name}.",
         color       = COLOR)
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
-    embed.add_field(name="🔋 Trion Level",     value=f"{trion} ({trion_rarity(trion)})", inline=True)
+    embed.add_field(name="<:TrionCube:1519499035613073438> Trion Level",     value=f"{trion} ({trion_rarity(trion)})", inline=True)
     embed.add_field(name="🧬 Side Effect",     value=side["name"] if side else "None",    inline=True)
     embed.add_field(name="🎰 Starting Spins",  value=5,                                   inline=True)
     embed.add_field(name="💳 Starting Credits",value=100,                                  inline=True)
@@ -1611,7 +1611,7 @@ async def faction(interaction: discord.Interaction, faction_name: str):
 @bot.tree.command(name="classes", description="View all classes and matchups")
 async def classes(interaction: discord.Interaction):
     embed = discord.Embed(
-        title       = "⚔️ Border Combat Classes",
+        title       = "<:Border:1519494342799130695> Border Combat Classes",
         description = f"Each class deals **+{int((CLASS_ADVANTAGE_MULT-1)*100)}% damage** against its counter.",
         color       = COLOR)
     for name, data in CLASSES.items():
@@ -1668,11 +1668,11 @@ async def profile(interaction: discord.Interaction):
     cap  = get_stat_cap(elo)
     used = sum(stats.values()) - 6
 
-    embed = discord.Embed(title=f"🛡️ {interaction.user.display_name}", color=COLOR)
+    embed = discord.Embed(title=f"<:Border:1519494342799130695> {interaction.user.display_name}", color=COLOR)
     embed.set_thumbnail(url=interaction.user.display_avatar.url)
 
     side_name = json.loads(side)["name"] if side else "None"
-    embed.add_field(name="🔋 Trion",       value=f"{trion} ({trion_rarity(trion)})", inline=True)
+    embed.add_field(name="<:TrionCube:1519499035613073438> Trion",       value=f"{trion} ({trion_rarity(trion)})", inline=True)
     embed.add_field(name="🧬 Side Effect", value=side_name,                          inline=True)
     if cls:
         embed.add_field(name="⚔️ Class",   value=f"{CLASSES[cls]['emoji']} {cls}", inline=True)
@@ -1683,7 +1683,7 @@ async def profile(interaction: discord.Interaction):
     embed.add_field(name="🏆 ELO", value=f"{elo} ({rank})\n{elo_bar}", inline=False)
     embed.add_field(name="W / L",         value=f"{wins} / {losses}",   inline=True)
     embed.add_field(name="🎰 Spins",      value=spins,                  inline=True)
-    embed.add_field(name="💳 Credits",    value=credits,                inline=True)
+    embed.add_field(name="<:Yen:1519498350364332082> Credits",    value=credits,                inline=True)
     embed.add_field(name="🌟 Skill Pts",  value=skill_pts,              inline=True)
 
     stat_text = ""
@@ -1911,7 +1911,7 @@ async def stats(interaction: discord.Interaction):
 
     embed = discord.Embed(title="📊 Agent Stats", color=COLOR)
     for name_, val in [("⚔️ Attack", attack), ("🛡 Defense", defense), ("🏃 Mobility", mobility),
-                       ("🧠 Intelligence", intelligence), ("🔋 Trion Control", trion_control), ("👁 Perception", perception)]:
+                       ("🧠 Intelligence", intelligence), ("<:TrionCube:1519499035613073438> Trion Control", trion_control), ("👁 Perception", perception)]:
         embed.add_field(name=name_, value=f"{val}  {stat_bar(min(val, 10))}", inline=True)
     embed.add_field(name="⭐ Unspent Points", value=points, inline=False)
     embed.add_field(name="📈 Cap",
@@ -2684,7 +2684,7 @@ async def baseinfo(interaction: discord.Interaction):
     embed = discord.Embed(title="🏢 Border HQ Status", color=COLOR)
     embed.add_field(name="🛡 Total Agents",        value=total_agents)
     embed.add_field(name="👥 Total Squads",         value=total_squads)
-    embed.add_field(name="💳 Credits Circulating", value=total_credits)
+    embed.add_field(name="<:Yen:1519498350364332082> Credits Circulating", value=total_credits)
     await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(name="base", description="View Border Base defence status")
@@ -2694,7 +2694,7 @@ async def base(interaction: discord.Interaction):
         row        = await cursor.fetchone()
         level, hp  = row if row else (1, 10000)
     bar   = hp_bar(hp, 10000)
-    embed = discord.Embed(title="🏰 Border Base", color=COLOR)
+    embed = discord.Embed(title="<:Border:1519494342799130695> Border Base", color=COLOR)
     embed.add_field(name="Level", value=level)
     embed.add_field(name="HP",    value=f"{hp:,} / 10,000  {bar}")
     await interaction.response.send_message(embed=embed)
@@ -2702,7 +2702,7 @@ async def base(interaction: discord.Interaction):
 @bot.tree.command(name="basedefend", description="Join the base defence (cooperative — coming soon)")
 async def basedefend(interaction: discord.Interaction):
     await interaction.response.send_message(
-        embed=discord.Embed(title="🏰 Base Defence",
+        embed=discord.Embed(title="<:Border:1519494342799130695> Base Defence",
                             description="Cooperative base defence events are coming soon!",
                             color=COLOR))
 
@@ -2810,9 +2810,9 @@ async def redeem(interaction: discord.Interaction, code: str):
         await db.commit()
 
     msg = []
-    if c:    msg.append(f"💳 +{c} Credits")
+    if c:    msg.append(f"<:Yen:1519498350364332082> +{c} Credits")
     if s:    msg.append(f"🎰 +{s} Spins")
-    if trigs: msg.append(f"⚙️ Triggers: {', '.join(trigs)}")
+    if trigs: msg.append(f"<:Trigger:1518993124406333661> Triggers: {', '.join(trigs)}")
     await interaction.response.send_message(
         embed=discord.Embed(title="✅ Code Redeemed!",
                             description="\n".join(msg) or "Nothing received.",
@@ -3013,7 +3013,7 @@ async def missionsboard(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
-# /rankwar  /ping
+# /rankwar
 # ============================================================
 @bot.tree.command(name="rankwar", description="Challenge a squad to a Rank War (coming soon)")
 @app_commands.describe(opponent_leader="Leader of the opposing squad")
@@ -3023,15 +3023,8 @@ async def rankwar(interaction: discord.Interaction, opponent_leader: discord.Mem
                             description="3v3 squad Rank Wars are coming in a future update!",
                             color=COLOR))
 
-@bot.tree.command(name="ping", description="Check bot latency")
-async def ping(interaction: discord.Interaction):
-    latency = round(bot.latency * 1000, 2)
-    await interaction.response.send_message(
-        embed=discord.Embed(title="🏓 Pong!", description=f"Latency: **{latency}ms**", color=COLOR))
-
-
 # ============================================================
-# /about
+# /updatelog
 # ============================================================
 @bot.tree.command(name="updatelog", description="Show the latest update log")
 async def updatelog(interaction: discord.Interaction):
