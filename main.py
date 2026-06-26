@@ -167,6 +167,48 @@ TRIGGERS = {
             {"name": "Lightning Storm","dmg": 1.7, "cost": 2, "level": 4},
         ],
     },
+    # ── Gunner (Main) ───────────────────────────────────────
+    # Gunners wield the Gun trigger, which manifests a physical firearm.
+    # Unlike Shooters (who shape trion cubes themselves), Gunners trade
+    # flexibility for accuracy and sustained suppressive fire.
+    # All four gun-forms below pair with bullet triggers in lore; here they
+    # are standalone Gunner-class main triggers.
+    "Handgun": {
+        "price": 60, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 4, "mobility": 2},
+        "moves": [
+            {"name": "Single Shot",   "dmg": 1.0, "cost": 0, "level": 1},
+            {"name": "Quick Draw",    "dmg": 1.3, "cost": 1, "level": 2},
+            {"name": "Double Tap",    "dmg": 1.6, "cost": 2, "level": 4},
+        ],
+    },
+    "Assault Rifle": {
+        "price": 90, "trion_cost": 2, "type": "main",
+        "buffs": {"attack": 5, "perception": 1},
+        "moves": [
+            {"name": "Burst Fire",    "dmg": 1.1, "cost": 0, "level": 1},
+            {"name": "Suppressing Spray","dmg": 1.4, "cost": 1, "level": 2},
+            {"name": "Full Auto",     "dmg": 1.7, "cost": 2, "level": 4},
+        ],
+    },
+    "Shotgun": {
+        "price": 100, "trion_cost": 3, "type": "main",
+        "buffs": {"attack": 6, "defense": 1},
+        "moves": [
+            {"name": "Scatter Shot",  "dmg": 1.2, "cost": 0, "level": 1},
+            {"name": "Close Blast",   "dmg": 1.5, "cost": 1, "level": 2},
+            {"name": "Point Blank",   "dmg": 1.9, "cost": 2, "level": 4},
+        ],
+    },
+    "Minigun": {
+        "price": 140, "trion_cost": 4, "type": "main",
+        "buffs": {"attack": 7, "trion_control": 2},
+        "moves": [
+            {"name": "Sustained Fire","dmg": 1.3, "cost": 0, "level": 1},
+            {"name": "Spin Up",       "dmg": 1.6, "cost": 1, "level": 3},
+            {"name": "Bullet Hell",   "dmg": 2.1, "cost": 3, "level": 5},
+        ],
+    },
     # ── Optional (no moves — passive buffs only) ────────────
     "Grasshopper":  {"price": 60,  "trion_cost": 1, "type": "optional", "buffs": {"mobility": 5},               "moves": []},
     "Bagworm":      {"price": 50,  "trion_cost": 1, "type": "optional", "buffs": {"evasion": 3, "mobility": 1}, "moves": []},
@@ -279,6 +321,47 @@ def random_neighbor():
     return name, stats["hp"], stats["damage"]
 
 # ============================================================
+# DATA — STORY BOSSES  (lore-accurate Aftokrator invaders)
+# Each boss wields a Black Trigger and has stats far beyond a
+# regular Neighbor.  Used by boss-type story missions.
+# ============================================================
+BOSSES = {
+    # ── Chapter 3 boss: the "main Neighbor threat" ──
+    "Radar": {
+        "title": "Trion Soldier",
+        "hp": 120, "damage": 9,
+        "description": "A massive Trion Soldier rampages through Mikado City.",
+    },
+    # ── Chapter 4: Aftokrator invasion — the three commanders ──
+    "Viza": {
+        "title": "Aftokrator Commander — wielder of Organon",
+        "hp": 220, "damage": 16,
+        "description": "Viza, a veteran Aftokrator commander, wields the Black Trigger **Organon** — "
+                       "a blade that can slice through dimensions themselves.",
+    },
+    "Enedora": {
+        "title": "Aftokrator Invader — wielder of Vorvoros",
+        "hp": 200, "damage": 14,
+        "description": "Enedora transforms his body into toxic liquid using the Black Trigger **Vorvoros**, "
+                       "dissolving anything he touches.",
+    },
+    "Hyrein": {
+        "title": "Aftokrator Commander-in-Chief — wielder of Alektor",
+        "hp": 280, "damage": 19,
+        "description": "Hyrein, the supreme commander of the Aftokrator expedition force, unleashes the "
+                       "Black Trigger **Alektor** — flocks of homing feather-blades.",
+    },
+}
+
+# Map each boss story mission (chapter, mission) to a boss name.
+BOSS_MISSIONS = {
+    (3, 1): "Radar",
+    (4, 1): "Viza",
+    (4, 2): "Enedora",
+    (4, 3): "Hyrein",
+}
+
+# ============================================================
 # DATA — SIDE EFFECTS
 # ============================================================
 COMMON_EFFECTS = [
@@ -378,6 +461,8 @@ DAILY_MISSION_POOL = [
     {"desc": "Win a duel",                   "type": "duel_wins",    "target": 1, "reward_credits": 200, "reward_spins": 2},
     {"desc": "Use Kogetsu moves 5 times",    "type": "trigger_move", "trigger": "Kogetsu", "target": 5, "reward_credits": 80, "reward_spins": 0},
     {"desc": "Complete an expedition",       "type": "expedition",   "target": 1, "reward_credits": 120, "reward_spins": 1},
+    {"desc": "Defeat 5 Neighbors in combat", "type": "neighbor_kills","target": 5, "reward_credits": 130, "reward_spins": 1},
+    {"desc": "Defeat a boss in the story",   "type": "boss_kills",   "target": 1, "reward_credits": 250, "reward_spins": 2},
 ]
 
 # ============================================================
@@ -424,6 +509,13 @@ async def calculate_damage(user_id, trion, side_effect=None, triggers=None, stat
         for trig_name in triggers:
             trig = get_trigger(trig_name)
             if not trig:
+                continue
+            # Black Triggers are powered by their creator's trion, not the
+            # wielder's — their buffs ALWAYS apply regardless of trion cost.
+            # (This fixes Black Triggers being a nerf for low-trion agents.)
+            if trig.get("black_trigger"):
+                for stat, value in trig.get("buffs", {}).items():
+                    buff += value * STAT_WEIGHTS.get(stat, 1)
                 continue
             cost = trig.get("trion_cost", 0)
             if remaining_trion >= cost:
@@ -704,9 +796,12 @@ class TurnBattleView(discord.ui.View):
             await interaction.response.send_message("Invalid move.", ephemeral=True)
             return
 
+        # Move cost is drawn from the agent's Trion pool (the permanent stat).
+        # Battle HP is tracked separately via ``hp`` so survivability no longer
+        # doubles as a move-resource meter.
         cost = move.get("cost", 0)
         if self.player["trion"] < cost:
-            await interaction.response.send_message("Not enough Trion!", ephemeral=True)
+            await interaction.response.send_message("<:TrionCube:1519499035613073438> Not enough Trion to use that move!", ephemeral=True)
             return
 
         self.player["trion"] -= cost
@@ -733,10 +828,10 @@ class TurnBattleView(discord.ui.View):
             return
 
         ai_dmg = max(1, int(self.ai["damage"] * (0.8 + random.random() * 0.6)))
-        self.player["trion"] = max(0, self.player["trion"] - ai_dmg)
+        self.player["hp"] = max(0, self.player["hp"] - ai_dmg)
         self.battle_log.append(f"**{self.ai['name']}** hits back — {ai_dmg} dmg.")
 
-        if self.player["trion"] <= 0:
+        if self.player["hp"] <= 0:
             await self._end_battle(interaction, won=False)
             return
 
@@ -748,9 +843,9 @@ class TurnBattleView(discord.ui.View):
 
     async def _handle_defend(self, interaction):
         ai_dmg = max(1, int(self.ai["damage"] * 0.4))
-        self.player["trion"] = max(0, self.player["trion"] - ai_dmg)
+        self.player["hp"] = max(0, self.player["hp"] - ai_dmg)
         self.battle_log.append(f"**{self.player['name']}** defends. Took only {ai_dmg} dmg.")
-        if self.player["trion"] <= 0:
+        if self.player["hp"] <= 0:
             await self._end_battle(interaction, won=False)
             return
         if self.operator_cooldown > 0:
@@ -779,17 +874,17 @@ class TurnBattleView(discord.ui.View):
         await self._update_message(interaction)
 
     async def _handle_bailout(self, interaction):
-        cost = max(1, self.player["trion"] // 3)
-        self.player["trion"] = max(0, self.player["trion"] - cost)
-        self.battle_log.append(f"🚀 **{self.player['name']}** bails out! Lost {cost} Trion.")
+        cost = max(1, self.player["hp"] // 3)
+        self.player["hp"] = max(0, self.player["hp"] - cost)
+        self.battle_log.append(f"🚀 **{self.player['name']}** bails out! Lost {cost} HP.")
         await self._end_battle(interaction, won=False, bailout=True)
 
     def _status_text(self) -> str:
-        p_bar  = hp_bar(self.player["trion"], self.player["max_trion"])
+        p_bar  = hp_bar(self.player["hp"], self.player["max_hp"])
         ai_bar = hp_bar(self.ai["trion"],     self.ai["max_trion"])
         lines  = [
             f"## ⚔️ Turn {self.turn}",
-            f"🛡️ **{self.player['name']}**  {p_bar}  {self.player['trion']} Trion",
+            f"🛡️ **{self.player['name']}**  {p_bar}  {self.player['hp']} HP  ·  <:TrionCube:1519499035613073438> {self.player['trion']}",
             f"👾 **{self.ai['name']}**  {ai_bar}  {self.ai['trion']} HP",
             "",
         ] + self.battle_log[-4:]
@@ -807,7 +902,7 @@ class TurnBattleView(discord.ui.View):
             result += " (Bailed Out)"
 
         embed = discord.Embed(title="⚔️ Battle Ended", color=COLOR if won else 0xe74c3c)
-        embed.add_field(name="🛡️ You",    value=f"{self.player['trion']} Trion", inline=True)
+        embed.add_field(name="🛡️ You",    value=f"{self.player['hp']} HP",  inline=True)
         embed.add_field(name="👾 Enemy",  value=f"{self.ai['trion']} HP",        inline=True)
         embed.add_field(name="Result",    value=result,                              inline=False)
         embed.description = "\n".join(self.battle_log[-8:])
@@ -815,7 +910,8 @@ class TurnBattleView(discord.ui.View):
         await interaction.response.edit_message(content=None, embed=embed, view=self)
         self.stop()
         if self.callback:
-            await self.callback(won, bailout, self.player["trion"])
+            # Pass final HP; callbacks use base_trion for the permanent stat.
+            await self.callback(won, bailout, self.player["hp"])
 
 # ============================================================
 # UI — TURN-BASED PvP DUEL VIEW
@@ -912,7 +1008,7 @@ class DuelTurnView(discord.ui.View):
             return
         cost = move.get("cost", 0)
         if attacker["trion"] < cost:
-            await interaction.response.send_message("Not enough Trion!", ephemeral=True)
+            await interaction.response.send_message("<:TrionCube:1519499035613073438> Not enough Trion!", ephemeral=True)
             return
         attacker["trion"] -= cost
 
@@ -931,14 +1027,14 @@ class DuelTurnView(discord.ui.View):
             move           = effective_move,
             skills         = attacker.get("skills"),
         )
-        defender["trion"] = max(0, defender["trion"] - dmg)
+        defender["hp"] = max(0, defender["hp"] - dmg)
         self.battle_log.append(f"**{attacker['name']}** → **{defender['name']}** | {move_name}: {dmg} dmg")
 
         op = attacker.get("squad_operator")
         if op and self.op_cooldowns.get(op, 0) > 0:
             self.op_cooldowns[op] -= 1
 
-        if defender["trion"] <= 0:
+        if defender["hp"] <= 0:
             await self._end_battle(interaction, winner=attacker, loser=defender)
             return
 
@@ -975,9 +1071,9 @@ class DuelTurnView(discord.ui.View):
             self.battle_log.append(f"📡 **{op}** boosts {attacker['name']}'s next attack!")
         elif effect["type"] == "add_damage":
             defender = self._other()
-            defender["trion"] = max(0, defender["trion"] - effect["value"])
+            defender["hp"] = max(0, defender["hp"] - effect["value"])
             self.battle_log.append(f"📡 **{op}** strikes {defender['name']} for {effect['value']}!")
-            if defender["trion"] <= 0:
+            if defender["hp"] <= 0:
                 await self._end_battle(interaction, winner=attacker, loser=defender)
                 return
         self.op_cooldowns[op] = 3
@@ -986,19 +1082,19 @@ class DuelTurnView(discord.ui.View):
 
     async def _handle_bailout(self, interaction):
         attacker = self.current
-        cost     = max(1, attacker["trion"] // 3)
-        attacker["trion"] = max(0, attacker["trion"] - cost)
-        self.battle_log.append(f"🚀 **{attacker['name']}** bails out! Lost {cost} Trion.")
+        cost     = max(1, attacker["hp"] // 3)
+        attacker["hp"] = max(0, attacker["hp"] - cost)
+        self.battle_log.append(f"🚀 **{attacker['name']}** bails out! Lost {cost} HP.")
         winner = self._other()
         await self._end_battle(interaction, winner=winner, loser=attacker)
 
     def _status_text(self) -> str:
-        p1_bar = hp_bar(self.player1["trion"], self.player1["max_trion"])
-        p2_bar = hp_bar(self.player2["trion"], self.player2["max_trion"])
+        p1_bar = hp_bar(self.player1["hp"], self.player1["max_hp"])
+        p2_bar = hp_bar(self.player2["hp"], self.player2["max_hp"])
         lines  = [
             f"## ⚔️ Turn {self.turn}  —  {self.current['name']}'s turn",
-            f"🛡️ **{self.player1['name']}**  {p1_bar}  {self.player1['trion']} Trion",
-            f"🛡️ **{self.player2['name']}**  {p2_bar}  {self.player2['trion']} Trion",
+            f"🛡️ **{self.player1['name']}**  {p1_bar}  {self.player1['hp']} HP  ·  <:TrionCube:1519499035613073438> {self.player1['trion']}",
+            f"🛡️ **{self.player2['name']}**  {p2_bar}  {self.player2['hp']} HP  ·  <:TrionCube:1519499035613073438> {self.player2['trion']}",
             "",
         ] + self.battle_log[-4:]
         return "\n".join(lines)
@@ -1013,8 +1109,8 @@ class DuelTurnView(discord.ui.View):
         embed = discord.Embed(title="⚔️ Duel Ended", color=COLOR)
         embed.add_field(name="🏆 Winner", value=winner["name"], inline=True)
         embed.add_field(name="💀 Loser",  value=loser["name"],  inline=True)
-        embed.add_field(name="🛡️ " + self.player1["name"], value=f"{self.player1['trion']} Trion", inline=True)
-        embed.add_field(name="🛡️ " + self.player2["name"], value=f"{self.player2['trion']} Trion", inline=True)
+        embed.add_field(name="🛡️ " + self.player1["name"], value=f"{self.player1['hp']} HP", inline=True)
+        embed.add_field(name="🛡️ " + self.player2["name"], value=f"{self.player2['hp']} HP", inline=True)
         embed.description = "\n".join(self.battle_log[-8:])
 
         await interaction.response.edit_message(content=None, embed=embed, view=self)
@@ -1023,8 +1119,8 @@ class DuelTurnView(discord.ui.View):
             await self.callback(
                 winner     = winner,
                 loser      = loser,
-                final_trion1 = self.player1["trion"],
-                final_trion2 = self.player2["trion"],
+                final_trion1 = self.player1["hp"],
+                final_trion2 = self.player2["hp"],
             )
 
 # ============================================================
@@ -1287,6 +1383,10 @@ _arena_cooldowns: dict = {}
 ARENA_COOLDOWN        = 30
 EXPEDITION_DURATION   = 4 * 3600
 
+# /train cooldown — 1 hour per agent (in-memory, same pattern as arena)
+_train_cooldowns: dict = {}
+TRAIN_COOLDOWN        = 3600  # 1 hour in seconds
+
 LOADOUT_SLOTS          = ["Main", "Sub", "Optional"]
 MAIN_COMPATIBLE_SLOTS  = ["Main", "Sub"]
 OPT_COMPATIBLE_SLOTS   = ["Optional"]
@@ -1355,7 +1455,12 @@ async def assign_daily_missions(user_id: int):
                 (user_id, idx, DAILY_MISSION_POOL[idx]["target"], date))
         await db.commit()
 
-async def update_daily_missions(user_id: int, mission_type: str, trigger: str = None):
+async def update_daily_missions(user_id: int, mission_type: str, trigger: str = None, count: int = 1):
+    """Increment daily-mission progress.
+
+    ``count`` lets a single event advance a mission by more than one step
+    (e.g. defeating a 3-Neighbor wave grants 3 ``neighbor_kills`` at once).
+    """
     date = datetime.date.today().isoformat()
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute(
@@ -1369,7 +1474,7 @@ async def update_daily_missions(user_id: int, mission_type: str, trigger: str = 
                 continue
             if mission_type == "trigger_move" and trigger != pool_entry.get("trigger"):
                 continue
-            new_progress = progress + 1
+            new_progress = min(progress + count, target)
             if new_progress >= target:
                 await db.execute(
                     "UPDATE daily_missions SET progress=?, completed=1 WHERE user_id=? AND mission_id=? AND date=?",
@@ -1424,6 +1529,11 @@ async def _fetch_player_combat_data(user_id: int) -> dict | None:
         "trion":          trion,
         "max_trion":      trion,
         "base_trion":     trion,
+        # Battle HP is derived from trion so even low-trion agents can survive
+        # a few hits.  ``base_trion`` is still used for damage calculation, so
+        # raw damage output is unchanged — only survivability improves.
+        "hp":             trion * 10,
+        "max_hp":         trion * 10,
         "side_effect":    side,
         "elo":            elo,
         "wins":           wins,
@@ -1486,7 +1596,7 @@ async def help_cmd(interaction: discord.Interaction):
     embed.add_field(name="🌌 Expedition",
                     value="`/expedition` *(B-Rank+)*", inline=False)
     embed.add_field(name="🛒 Triggers & Loadout",
-                    value="`/shop`  `/sideeffects`  `/buytrigger`  `/equip`  `/loadout`  `/triggerforge`  `/dismantle`", inline=False)
+                    value="`/shop`  `/sideeffects`  `/buytrigger`  `/equip`  `/loadout`  `/inventory`  `/triggerforge`  `/dismantle`", inline=False)
     embed.add_field(name="📊 Stats & Ranking",
                     value="`/stats`  `/upgradestat`  `/trionrank`  `/leaderboard`  `/spin`", inline=False)
     embed.add_field(name="⚔️ Classes & Factions",
@@ -1537,7 +1647,7 @@ async def joinborder(interaction: discord.Interaction):
     embed.add_field(name="<:TrionCube:1519499035613073438> Trion Level",     value=f"{trion} ({trion_rarity(trion)})", inline=True)
     embed.add_field(name="🧬 Side Effect",     value=side["name"] if side else "None",    inline=True)
     embed.add_field(name="🎰 Starting Spins",  value=5,                                   inline=True)
-    embed.add_field(name="💳 Starting Credits",value=100,                                  inline=True)
+    embed.add_field(name="<:Yen:1519498350364332082> Starting Credits",value=100,                                  inline=True)
     embed.add_field(name="⚔️ Next Steps",
                     value="1️⃣ `/setclass` — pick Attacker / Sniper / Gunner / Shooter / All Rounder\n"
                           "2️⃣ `/faction` — join Kido, Shinoda, or Tamakoma\n"
@@ -1816,6 +1926,18 @@ async def equip(interaction: discord.Interaction, trigger: str, slot: str):
         return
 
     t_type = trig_data["type"]
+    is_black = trig_data.get("black_trigger", False)
+
+    # Black Triggers are all-consuming — in World Trigger lore a Black Trigger
+    # draws on the wielder's entire trion supply and cannot be paired with
+    # other triggers.  Restrict them to the Main slot only.
+    if is_black and slot != "Main":
+        await interaction.response.send_message(
+            f"🌑 **{trig_name}** is a Black Trigger — it demands the **Main** slot exclusively.\n"
+            f"*(A Black Trigger consumes the wielder's full trion focus.)*",
+            ephemeral=True)
+        return
+
     if t_type == "main"     and slot not in MAIN_COMPATIBLE_SLOTS:
         await interaction.response.send_message(f"**{trig_name}** (Main-type) can only go in **Main** or **Sub**.", ephemeral=True)
         return
@@ -1828,6 +1950,12 @@ async def equip(interaction: discord.Interaction, trigger: str, slot: str):
         if not await cursor.fetchone():
             await interaction.response.send_message(f"You don't own **{trig_name}**.", ephemeral=True)
             return
+
+        # Equipping a Black Trigger to Main clears the Sub slot (lore: you
+        # cannot sustain a second trigger alongside a Black Trigger).
+        if is_black and slot == "Main":
+            await db.execute("DELETE FROM loadouts WHERE user_id=? AND slot='Sub'", (user_id,))
+
         await db.execute(
             "INSERT OR REPLACE INTO loadouts (user_id, trigger, slot) VALUES (?,?,?)",
             (user_id, trig_name, slot))
@@ -1839,53 +1967,175 @@ async def equip(interaction: discord.Interaction, trigger: str, slot: str):
                             color=COLOR))
 
 # ============================================================
-# /spin
+# /inventory  (all owned triggers + credits in one view)
 # ============================================================
-@bot.tree.command(name="spin", description="Spend a spin to reroll Trion or Side Effect")
-@app_commands.describe(spin_type="What to reroll")
-@app_commands.choices(spin_type=[
-    app_commands.Choice(name="Trion",       value="trion"),
-    app_commands.Choice(name="Side Effect", value="side_effect"),
-])
-async def spin(interaction: discord.Interaction, spin_type: str):
+@bot.tree.command(name="inventory", description="View all your triggers and credits")
+async def inventory(interaction: discord.Interaction):
     if not await agent_required(interaction):
         return
     user_id = interaction.user.id
-
     async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute("SELECT spins, trion, side_effect FROM agents WHERE user_id=?", (user_id,))
-        spins, cur_trion, cur_side = await cursor.fetchone()
+        cursor = await db.execute(
+            "SELECT trion, spins, credits, elo, class, faction FROM agents WHERE user_id=?",
+            (user_id,))
+        trion, spins, credits, elo, cls, faction = await cursor.fetchone()
 
-        if spins <= 0:
+        cursor = await db.execute("SELECT trigger FROM triggers WHERE user_id=?", (user_id,))
+        owned_triggers = [r[0] for r in await cursor.fetchall()]
+
+        cursor = await db.execute("SELECT trigger, slot FROM loadouts WHERE user_id=?", (user_id,))
+        loadout_rows = await cursor.fetchall()
+
+        cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (user_id,))
+        mastery = {r[0]: r[1] for r in await cursor.fetchall()}
+
+    equipped_map = {slot: trig for trig, slot in loadout_rows}
+
+    embed = discord.Embed(
+        title       = f"🎒 {interaction.user.display_name}'s Inventory",
+        description = f"<:Border:1519494342799130695> Border Agent  ·  **{get_rank(elo)}**",
+        color       = COLOR)
+    embed.set_thumbnail(url=interaction.user.display_avatar.url)
+
+    # Currency row
+    embed.add_field(name="<:TrionCube:1519499035613073438> Trion", value=f"**{trion}** ({trion_rarity(trion)})", inline=True)
+    embed.add_field(name="<:Yen:1519498350364332082> Credits", value=f"**{credits}**", inline=True)
+    embed.add_field(name="🎰 Spins", value=f"**{spins}**", inline=True)
+
+    # Equipped loadout
+    loadout_lines = []
+    for slot in LOADOUT_SLOTS:
+        trig = equipped_map.get(slot, "—")
+        if trig != "—":
+            tdata = get_trigger(trig)
+            tag = ""
+            if tdata and tdata.get("black_trigger"):
+                tag = " 🌑"
+            loadout_lines.append(f"**{slot}:** <:Trigger:1518993124406333661> {trig}{tag}")
+        else:
+            loadout_lines.append(f"**{slot}:** —")
+    embed.add_field(name="⚡ Equipped Loadout", value="\n".join(loadout_lines), inline=False)
+
+    # All owned triggers
+    if owned_triggers:
+        trigger_lines = []
+        for trig in owned_triggers:
+            tdata = get_trigger(trig)
+            t_type = tdata["type"].capitalize() if tdata else "?"
+            black_tag = " 🌑 Black" if tdata and tdata.get("black_trigger") else ""
+            lvl = mastery.get(trig, 1)
+            equipped_tag = " ✅" if trig in equipped_map.values() else ""
+            trigger_lines.append(
+                f"<:Trigger:1518993124406333661> **{trig}**  ·  {t_type}{black_tag}  ·  Lv.{lvl}{equipped_tag}")
+        # Discord embed field value max 1024 chars — chunk if needed
+        text = "\n".join(trigger_lines)
+        if len(text) <= 1024:
+            embed.add_field(name=f"📦 Owned Triggers ({len(owned_triggers)})", value=text, inline=False)
+        else:
+            # Split into two fields
+            mid = len(trigger_lines) // 2
+            embed.add_field(name=f"📦 Owned Triggers ({len(owned_triggers)}) — 1/2",
+                            value="\n".join(trigger_lines[:mid]), inline=False)
+            embed.add_field(name=f"📦 Owned Triggers — 2/2",
+                            value="\n".join(trigger_lines[mid:]), inline=False)
+    else:
+        embed.add_field(name="📦 Owned Triggers", value="*No triggers owned yet. Use `/shop` to buy some!*", inline=False)
+
+    embed.set_footer(text="🌑 = Black Trigger  |  ✅ = Currently equipped  |  Use /equip to change loadout")
+    await interaction.response.send_message(embed=embed)
+
+# ============================================================
+# /spin  (interactive embed with spin buttons)
+# ============================================================
+class SpinView(discord.ui.View):
+    """An interactive spin panel.  Click a button to spend a spin and reroll."""
+
+    def __init__(self, user_id: int):
+        super().__init__(timeout=180)
+        self.user_id = user_id
+        self.last_result = None
+        self._refresh_state()
+
+    async def _refresh_state(self):
+        async with aiosqlite.connect(DB_NAME) as db:
+            cursor = await db.execute("SELECT spins, trion, side_effect FROM agents WHERE user_id=?", (self.user_id,))
+            self.spins, self.trion, self.side_json = await cursor.fetchone()
+        self.side = json.loads(self.side_json) if self.side_json else None
+
+    def build_embed(self) -> discord.Embed:
+        embed = discord.Embed(
+            title       = "🎰 Trion Spin Panel",
+            description = "Spend a spin to reroll your **Trion** level or **Side Effect**.\n"
+                          "Each spin is final — choose wisely!",
+            color       = COLOR)
+        embed.add_field(name="<:TrionCube:1519499035613073438> Current Trion",
+                        value=f"**{self.trion}** ({trion_rarity(self.trion)})", inline=True)
+        embed.add_field(name="🧬 Current Side Effect",
+                        value=self.side["name"] if self.side else "None", inline=True)
+        embed.add_field(name="🎰 Spins Remaining", value=f"**{self.spins}**", inline=False)
+        if self.last_result:
+            embed.add_field(name="🎲 Last Result", value=self.last_result, inline=False)
+        if self.spins <= 0:
+            embed.set_footer(text="Out of spins — earn more via missions, expeditions & duels!")
+        return embed
+
+    def _update_buttons(self):
+        for child in self.children:
+            child.disabled = self.spins <= 0
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("This isn't your spin panel!", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Spin Trion", style=discord.ButtonStyle.primary, emoji="<:TrionCube:1519499035613073438>")
+    async def spin_trion(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._do_spin(interaction, "trion")
+
+    @discord.ui.button(label="Spin Side Effect", style=discord.ButtonStyle.success, emoji="🧬")
+    async def spin_side(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self._do_spin(interaction, "side_effect")
+
+    async def _do_spin(self, interaction: discord.Interaction, spin_type: str):
+        await self._refresh_state()
+        if self.spins <= 0:
             await interaction.response.send_message(
                 embed=discord.Embed(title="❌ No Spins Left",
                                     description="You've used all your spins.",
-                                    color=0xe74c3c),
-                ephemeral=True)
+                                    color=0xe74c3c), ephemeral=True)
             return
 
-        spins -= 1
-        if spin_type == "trion":
-            new_trion = roll_trion()
-            await db.execute("UPDATE agents SET trion=?, spins=? WHERE user_id=?", (new_trion, spins, user_id))
+        new_spins = self.spins - 1
+        async with aiosqlite.connect(DB_NAME) as db:
+            if spin_type == "trion":
+                old_val = self.trion
+                new_val = roll_trion()
+                await db.execute("UPDATE agents SET trion=?, spins=? WHERE user_id=?",
+                                 (new_val, new_spins, self.user_id))
+                self.last_result = (f"<:TrionCube:1519499035613073438> Trion: **{old_val}** → **{new_val}** "
+                                    f"({trion_rarity(new_val)})")
+            else:
+                old_name = self.side["name"] if self.side else "None"
+                new_side = roll_side_effect()
+                new_name = new_side["name"] if new_side else "None"
+                await db.execute("UPDATE agents SET side_effect=?, spins=? WHERE user_id=?",
+                                 (json.dumps(new_side) if new_side else None, new_spins, self.user_id))
+                self.last_result = f"🧬 Side Effect: **{old_name}** → **{new_name}**"
             await db.commit()
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title       = "🎲 Trion Rerolled",
-                    description = f"**{cur_trion}** → **{new_trion}** ({trion_rarity(new_trion)})\nSpins remaining: {spins}",
-                    color       = COLOR))
-        else:
-            new_side  = roll_side_effect()
-            old_name  = json.loads(cur_side)["name"] if cur_side else "None"
-            new_name  = new_side["name"]              if new_side else "None"
-            await db.execute("UPDATE agents SET side_effect=?, spins=? WHERE user_id=?",
-                             (json.dumps(new_side) if new_side else None, spins, user_id))
-            await db.commit()
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title       = "🎲 Side Effect Rerolled",
-                    description = f"**{old_name}** → **{new_name}**\nSpins remaining: {spins}",
-                    color       = COLOR))
+        await self._refresh_state()
+        self._update_buttons()
+        await interaction.response.edit_message(embed=self.build_embed(), view=self)
+
+
+@bot.tree.command(name="spin", description="Open the spin panel to reroll Trion or Side Effect")
+async def spin(interaction: discord.Interaction):
+    if not await agent_required(interaction):
+        return
+    view = SpinView(interaction.user.id)
+    await view._refresh_state()
+    view._update_buttons()
+    await interaction.response.send_message(embed=view.build_embed(), view=view)
 
 # ============================================================
 # /stats  /upgradestat
@@ -2017,19 +2267,27 @@ async def arena(interaction: discord.Interaction):
         await interaction.response.send_message("Registration data not found.", ephemeral=True)
         return
 
+    # ── Balanced Neighbor wave ──
+    # Previously the AI's HP was ``total_dmg * 10`` (huge) and its per-turn
+    # damage was the SUM of every neighbour's damage (often 1-shotting rookies).
+    # Now: AI HP = sum of individual neighbour HP (reasonable), and AI damage =
+    # the AVERAGE neighbour damage (one attack per turn, not a combined nuke).
     wave_count  = random.randint(2, 3)
     enemy_names = []
+    total_hp    = 0
     total_dmg   = 0
     for _ in range(wave_count):
         name, hp, dmg = random_neighbor()
         enemy_names.append(name)
+        total_hp  += hp
         total_dmg += dmg
+    avg_dmg = total_dmg // max(1, wave_count)
 
     ai = {
         "name":      f"Neighbor Wave: {', '.join(enemy_names)}",
-        "trion":     total_dmg * 10,
-        "max_trion": total_dmg * 10,
-        "damage":    total_dmg,
+        "trion":     total_hp,
+        "max_trion": total_hp,
+        "damage":    avg_dmg,
     }
 
     player = {
@@ -2043,7 +2301,7 @@ async def arena(interaction: discord.Interaction):
     losses= data["losses"]
     triggers = data["triggers"]
 
-    async def arena_callback(won: bool, bailout: bool, final_trion: int):
+    async def arena_callback(won: bool, bailout: bool, final_hp: int):
         async with aiosqlite.connect(DB_NAME) as db:
             new_elo = win_elo(elo) if won else lose_elo(elo)
             w = wins   + (1 if won  else 0)
@@ -2054,9 +2312,12 @@ async def arena(interaction: discord.Interaction):
                 for t in triggers:
                     await gain_trigger_xp(db, user_id, t, random.randint(8, 15))
                 await update_daily_missions(user_id, "arena_wins")
+                # Each neighbour in the defeated wave counts toward kill missions.
+                await update_daily_missions(user_id, "neighbor_kills", count=wave_count)
+            # Trion is a permanent stat — do NOT overwrite it with battle HP.
             await db.execute(
-                "UPDATE agents SET trion=?, elo=?, wins=?, losses=? WHERE user_id=?",
-                (max(1, final_trion), new_elo, w, l, user_id))
+                "UPDATE agents SET elo=?, wins=?, losses=? WHERE user_id=?",
+                (new_elo, w, l, user_id))
             await db.commit()
 
     view = TurnBattleView(
@@ -2067,7 +2328,9 @@ async def arena(interaction: discord.Interaction):
         squad_operator = data["squad_operator"],
     )
     await interaction.response.send_message(
-        f"⚔️ **{interaction.user.display_name}** enters the arena!\nTurn 1 — make your move!",
+        f"⚔️ **{interaction.user.display_name}** enters the arena!\n"
+        f"Turn 1 — make your move!\n"
+        f"👾 {wave_count} Neighbours incoming: {', '.join(enemy_names)}",
         view=view)
 
 # ============================================================
@@ -2118,8 +2381,7 @@ async def _start_duel(interaction: discord.Interaction, challenger: discord.Memb
                 for t in winner["triggers"]:
                     await gain_trigger_xp(db, w_id, t, random.randint(8, 15))
                 await update_daily_missions(w_id, "duel_wins")
-            await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion1), challenger.id))
-            await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion2), opponent.id))
+            # Trion is permanent — battle HP is no longer written back to the DB.
             await db.commit()
 
     player1 = {"user": challenger, "name": challenger.display_name, **p1_data}
@@ -2156,23 +2418,25 @@ async def mission(interaction: discord.Interaction):
     mission_desc  = random.choice(mission_types)
     wave_count    = random.randint(2, 4)
     enemy_names   = []
+    total_hp      = 0
     total_dmg     = 0
     for _ in range(wave_count):
         name, hp, dmg = random_neighbor()
         enemy_names.append(name)
+        total_hp  += hp
         total_dmg += dmg
-    ai_trion = total_dmg * 8
+    avg_dmg = total_dmg // max(1, wave_count)
 
     ai = {
         "name":      f"{mission_desc} — {', '.join(enemy_names)}",
-        "trion":     ai_trion,
-        "max_trion": ai_trion,
-        "damage":    total_dmg,
+        "trion":     total_hp,
+        "max_trion": total_hp,
+        "damage":    avg_dmg,
     }
     player   = {"user": interaction.user, "name": interaction.user.display_name, **data}
     triggers = data["triggers"]
 
-    async def mission_callback(won: bool, bailout: bool, final_trion: int):
+    async def mission_callback(won: bool, bailout: bool, final_hp: int):
         async with aiosqlite.connect(DB_NAME) as db:
             if won:
                 bonus_credits = random.randint(50, 200)
@@ -2182,7 +2446,8 @@ async def mission(interaction: discord.Interaction):
                 for t in triggers:
                     await gain_trigger_xp(db, user_id, t, random.randint(10, 20))
                 await update_daily_missions(user_id, "mission_wins")
-            await db.execute("UPDATE agents SET trion=? WHERE user_id=?", (max(1, final_trion), user_id))
+                await update_daily_missions(user_id, "neighbor_kills", count=wave_count)
+            # Trion is a permanent stat — do not overwrite with battle HP.
             await db.commit()
 
     view = TurnBattleView(
@@ -2276,54 +2541,93 @@ async def storymission(interaction: discord.Interaction):
 
 async def _story_arena(interaction, arc, chapter, mission_num, m_type, r_type, r_amount, r_trigger):
     user_id = interaction.user.id
-    async with aiosqlite.connect(DB_NAME) as db:
-        cursor = await db.execute("SELECT trion, side_effect, faction FROM agents WHERE user_id=?", (user_id,))
-        agent  = await cursor.fetchone()
-        if not agent:
-            await interaction.response.send_message("Use `/joinborder` first.", ephemeral=True)
-            return
-        trion, side, faction = agent
-        side = json.loads(side) if side else None
 
-        cursor   = await db.execute("SELECT trigger FROM loadouts WHERE user_id=?", (user_id,))
-        triggers = [r[0] for r in await cursor.fetchall()]
+    # ── Build the enemy ──────────────────────────────────────
+    # Boss missions use the lore-accurate boss (Viza, Enedora, Hyrein, Radar)
+    # rather than a random neighbour.  Arena missions still use neighbour waves.
+    boss_key = BOSS_MISSIONS.get((chapter, mission_num))
+    is_boss  = m_type == "boss"
 
-        cursor = await db.execute(
-            "SELECT attack, defense, mobility, intelligence, trion_control, perception FROM agent_stats WHERE user_id=?",
-            (user_id,))
-        s = await cursor.fetchone() or (1,1,1,1,1,1)
-        stats = {"attack":s[0],"defense":s[1],"mobility":s[2],
-                 "intelligence":s[3],"trion_control":s[4],"perception":s[5]}
+    if is_boss and boss_key and boss_key in BOSSES:
+        boss       = BOSSES[boss_key]
+        boss_hp    = boss["hp"]
+        boss_dmg   = boss["damage"]
+        boss_name  = boss_key
+        boss_title = boss["title"]
+        boss_desc  = boss["description"]
+    elif is_boss:
+        # Fallback — should not normally happen, but keeps the bot alive.
+        boss_name, boss_hp, boss_dmg = random_neighbor()
+        boss_title = "Mysterious Foe"
+        boss_desc  = "An unknown enemy appears!"
+    else:
+        boss_name = None  # arena — use a neighbour wave
 
-    dmg1 = await calculate_damage(user_id, trion, side, triggers, stats, faction=faction)
+    # Fetch the player's combat data (loads trion, side effect, triggers,
+    # stats, mastery, skills, squad operator all at once).
+    data = await _fetch_player_combat_data(user_id)
+    if not data:
+        await interaction.response.send_message("Registration data not found.", ephemeral=True)
+        return
 
-    wave_count  = 1 if m_type == "boss" else random.randint(2, 3)
-    enemy_names = []
-    total_dmg   = 0
-    for _ in range(wave_count):
-        name_, hp, dmg = random_neighbor()
-        if m_type == "boss":
-            dmg = int(dmg * 1.5)
-        enemy_names.append(name_)
-        total_dmg += dmg
-    dmg2 = int(total_dmg * 1.5)
+    triggers = data["triggers"]
+    player   = {"user": interaction.user, "name": interaction.user.display_name, **data}
 
-    won  = dmg1 >= dmg2
-    log  = (f"**Battle Start!**\n{interaction.user.display_name} deals **{dmg1}** damage.\n"
-            f"Neighbors ({', '.join(enemy_names)}) deal **{dmg2}** damage.\n")
-    log += "🏆 **You won!**" if won else "⚔️ **You lost!**"
+    wave_count_holder = 0  # set properly below for arena missions
 
-    async with aiosqlite.connect(DB_NAME) as db:
-        await _give_story_rewards(db, user_id, r_type, r_amount, r_trigger, won)
-        await _advance_story(db, user_id, arc, chapter, mission_num)
-        await db.commit()
+    # Build the AI dict for the TurnBattleView.
+    if is_boss:
+        ai = {
+            "name":      f"🌑 {boss_name} — {boss_title}",
+            "trion":     boss_hp,
+            "max_trion": boss_hp,
+            "damage":    boss_dmg,
+        }
+        intro = (f"🛡️ **Boss Fight!**\n{boss_desc}\n\n"
+                 f"🌑 **{boss_name}** ({boss_title}) blocks your path!\n"
+                 f"Turn 1 — make your move!")
+    else:
+        wave_count  = random.randint(2, 3)
+        enemy_names = []
+        total_hp    = 0
+        total_dmg   = 0
+        for _ in range(wave_count):
+            name_, hp, dmg = random_neighbor()
+            enemy_names.append(name_)
+            total_hp  += hp
+            total_dmg += dmg
+        avg_dmg = total_dmg // max(1, wave_count)
+        ai = {
+            "name":      f"Neighbor Squad: {', '.join(enemy_names)}",
+            "trion":     total_hp,
+            "max_trion": total_hp,
+            "damage":    avg_dmg,
+        }
+        wave_count_holder = wave_count
+        intro = (f"⚔️ **Story Battle**\n"
+                 f"Turn 1 — make your move!\n"
+                 f"👾 {wave_count} Neighbours incoming: {', '.join(enemy_names)}")
 
-    embed = discord.Embed(
-        title       = "🛡️ Boss Fight!" if m_type == "boss" else "⚔️ Story Battle",
-        description = log,
-        color       = COLOR)
-    embed.set_footer(text=f"Reward: {r_amount} {r_type}" + (f" · {r_trigger}" if r_trigger else ""))
-    await interaction.response.send_message(embed=embed)
+    async def story_callback(won: bool, bailout: bool, final_hp: int):
+        async with aiosqlite.connect(DB_NAME) as db:
+            await _give_story_rewards(db, user_id, r_type, r_amount, r_trigger, won)
+            if won:
+                if is_boss:
+                    await update_daily_missions(user_id, "boss_kills")
+                    await update_daily_missions(user_id, "neighbor_kills", count=1)
+                else:
+                    await update_daily_missions(user_id, "neighbor_kills", count=wave_count_holder)
+            await _advance_story(db, user_id, arc, chapter, mission_num)
+            await db.commit()
+
+    view = TurnBattleView(
+        channel        = interaction.channel,
+        player         = player,
+        ai             = ai,
+        callback       = story_callback,
+        squad_operator = data["squad_operator"],
+    )
+    await interaction.response.send_message(intro, view=view)
 
 async def _story_choice(interaction, arc, chapter, mission_num, choices_json, r_type, r_amount, r_trigger):
     choices = json.loads(choices_json)
@@ -2592,7 +2896,7 @@ async def simulation(interaction: discord.Interaction):
 # ============================================================
 # /combostats
 # ============================================================
-@bot.tree.command(name="combostats", description="Preview your estimated damage output")
+@bot.tree.command(name="combostats", description="Preview your estimated damage output (uses your real stats)")
 async def combostats(interaction: discord.Interaction):
     if not await agent_required(interaction):
         return
@@ -2616,14 +2920,71 @@ async def combostats(interaction: discord.Interaction):
         cursor = await db.execute("SELECT skill_name, level FROM agent_skills WHERE user_id=?", (user_id,))
         skills = {r[0]: r[1] for r in await cursor.fetchall()}
 
-    dmg = await calculate_damage(user_id, trion, side, triggers, stats,
-                                  attacker_class=cls, faction=fac, skills=skills)
+        cursor = await db.execute("SELECT trigger, level FROM trigger_mastery WHERE user_id=?", (user_id,))
+        mastery = {r[0]: r[1] for r in await cursor.fetchall()}
+
+    # ── Damage breakdown ──
+    # calculate_damage() DOES use stats, but the old /combostats only showed a
+    # single random number, making it look like stats were ignored.  Now we
+    # compute several variants side-by-side so the contribution of each layer
+    # is visible, plus a per-move breakdown for the equipped main trigger.
+
+    # 1. Base — trion only, no stats/triggers/faction/skills (no move multiplier)
+    base_only = await calculate_damage(user_id, trion, None, None,
+                                        {k: 0 for k in stats}, faction=None, skills=None)
+    # 2. Trion + stats only (no triggers, no faction, no skills)
+    with_stats = await calculate_damage(user_id, trion, None, None, stats, faction=None, skills=None)
+    # 3. Trion + stats + triggers
+    with_triggers = await calculate_damage(user_id, trion, None, triggers, stats, faction=None, skills=None)
+    # 4. Everything (stats + triggers + faction + skills + side effect)
+    full = await calculate_damage(user_id, trion, side, triggers, stats,
+                                   attacker_class=cls, faction=fac, skills=skills)
+
     embed = discord.Embed(title="💥 Combo Analysis", color=COLOR)
-    embed.add_field(name="Trion",    value=trion)
-    embed.add_field(name="Class",    value=cls  or "None")
-    embed.add_field(name="Faction",  value=fac  or "None")
-    embed.add_field(name="Loadout",  value=" | ".join(triggers) if triggers else "Empty")
-    embed.add_field(name="📊 Estimated Damage", value=f"**{dmg}**", inline=False)
+    embed.set_thumbnail(url=interaction.user.display_avatar.url)
+
+    embed.add_field(name="<:TrionCube:1519499035613073438> Trion", value=f"**{trion}** ({trion_rarity(trion)})", inline=True)
+    embed.add_field(name="⚔️ Class", value=f"{CLASSES[cls]['emoji']} {cls}" if cls else "None", inline=True)
+    embed.add_field(name="🏛️ Faction", value=f"{FACTIONS[fac]['emoji']} {fac}" if fac else "None", inline=True)
+
+    embed.add_field(name="⚡ Loadout",
+                    value=" | ".join(triggers) if triggers else "*Empty — equip a trigger!*",
+                    inline=False)
+
+    # Damage layer breakdown — proves stats are used
+    breakdown = (f"`Base (trion only)`  →  **{base_only}**\n"
+                 f"`+ Stats`             →  **{with_stats}**  *(+{with_stats - base_only})*\n"
+                 f"`+ Triggers`          →  **{with_triggers}**  *(+{with_triggers - with_stats})*\n"
+                 f"`+ Faction + Skills + Side Effect`  →  **{full}**  *(+{full - with_triggers})*")
+    embed.add_field(name="📊 Damage Breakdown (stats ARE used!)", value=breakdown, inline=False)
+
+    # Per-move breakdown for the main trigger
+    main_trig_name = None
+    main_trig_data = None
+    for trig in triggers:
+        tdata = get_trigger(trig)
+        if tdata and tdata.get("type") == "main":
+            main_trig_name = trig
+            main_trig_data = tdata
+            break
+
+    if main_trig_name and main_trig_data:
+        mastery_lvl = mastery.get(main_trig_name, 1)
+        moves = main_trig_data.get("moves", [])
+        avail_moves = [m for m in moves if m["level"] <= mastery_lvl] or moves[:1]
+        move_lines = []
+        for move in avail_moves:
+            move_dmg = await calculate_damage(user_id, trion, side, triggers, stats,
+                                               attacker_class=cls, faction=fac,
+                                               skills=skills, move=move)
+            cost_tag = f" ⚡{move.get('cost',0)}" if move.get('cost', 0) else ""
+            move_lines.append(f"**{move['name']}**{cost_tag} → **~{move_dmg}** dmg")
+        embed.add_field(name=f"🗡️ {main_trig_name} Moves (Mastery Lv.{mastery_lvl})",
+                        value="\n".join(move_lines), inline=False)
+    else:
+        embed.add_field(name="🗡️ Moves", value="*Equip a main trigger to see per-move damage.*", inline=False)
+
+    embed.set_footer(text="Damage has ±10 random variance per hit. Class advantage adds +30%.")
     await interaction.response.send_message(embed=embed)
 
 # ============================================================
@@ -2720,10 +3081,10 @@ async def trainers(interaction: discord.Interaction):
         embed.add_field(name=f"🧑 {trainer}",
                         value=f"{boost_text} · Cost: **{d['cost']} Credits**",
                         inline=False)
-    embed.set_footer(text="Use /train <trainer_name>")
+    embed.set_footer(text="Use /train <trainer_name>  ·  ⏳ 1-hour cooldown between sessions")
     await interaction.response.send_message(embed=embed)
 
-@bot.tree.command(name="train", description="Train with a Border trainer")
+@bot.tree.command(name="train", description="Train with a Border trainer (1h cooldown)")
 @app_commands.describe(trainer_name="Shinoda / Kido / Karasuma / Yūma")
 async def train(interaction: discord.Interaction, trainer_name: str):
     if not await agent_required(interaction):
@@ -2734,7 +3095,26 @@ async def train(interaction: discord.Interaction, trainer_name: str):
         return
 
     user_id = interaction.user.id
-    d       = TRAINERS[trainer_name]
+
+    # ── 1-hour cooldown check ──
+    now  = time.time()
+    last = _train_cooldowns.get(user_id, 0)
+    if now - last < TRAIN_COOLDOWN:
+        remaining = int(TRAIN_COOLDOWN - (now - last))
+        hrs  = remaining // 3600
+        mins = (remaining % 3600) // 60
+        secs = remaining % 60
+        time_str = f"{hrs}h {mins}m {secs}s" if hrs else (f"{mins}m {secs}s" if mins else f"{secs}s")
+        await interaction.response.send_message(
+            embed=discord.Embed(
+                title       = "⏳ Training Cooldown",
+                description = f"You can train again in **{time_str}**.\n"
+                              f"Training sessions require rest between workouts.",
+                color       = 0xe67e22),
+            ephemeral=True)
+        return
+
+    d = TRAINERS[trainer_name]
 
     async with aiosqlite.connect(DB_NAME) as db:
         cursor = await db.execute("SELECT credits FROM agents WHERE user_id=?", (user_id,))
@@ -2770,9 +3150,13 @@ async def train(interaction: discord.Interaction, trainer_name: str):
         await db.execute("UPDATE agents SET credits=credits-? WHERE user_id=?", (d["cost"], user_id))
         await db.commit()
 
+    # Start the cooldown AFTER a successful training session
+    _train_cooldowns[user_id] = time.time()
+
     await interaction.response.send_message(
         embed=discord.Embed(title="💪 Training Complete!",
-                            description=f"Trained with **{trainer_name}**!",
+                            description=f"Trained with **{trainer_name}**!\n"
+                                        f"⏳ Next training available in **1 hour**.",
                             color=COLOR))
 
 # ============================================================
